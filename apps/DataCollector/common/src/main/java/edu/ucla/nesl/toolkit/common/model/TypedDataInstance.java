@@ -1,36 +1,26 @@
 package edu.ucla.nesl.toolkit.common.model;
 
 /**
- * Created by cgshen on 10/7/16.
+ * Created by cgshen on 10/12/16.
  */
 
 public class TypedDataInstance extends DataInstance {
-    private DeviceType deviceType;
-    private SensorType sensorType;
+    public DataType dataType;
 
-    public TypedDataInstance(
-            long timestamp,
-            double[] values,
-            DeviceType deviceType,
-            SensorType sensorType) {
+    public TypedDataInstance(DataType dataType) {
+        this.dataType = dataType;
+    }
+
+    public TypedDataInstance(long timestamp, float[] values, DataType dataType) {
         super(timestamp, values);
-        this.deviceType = deviceType;
-        this.sensorType = sensorType;
+        this.dataType = dataType;
     }
 
-    public DeviceType getDeviceType() {
-        return deviceType;
+    public DataType getDataType() {
+        return dataType;
     }
 
-    public void setDeviceType(DeviceType deviceType) {
-        this.deviceType = deviceType;
-    }
-
-    public SensorType getSensorType() {
-        return sensorType;
-    }
-
-    public void setSensorType(SensorType sensorType) {
-        this.sensorType = sensorType;
+    public void setDataType(DataType dataType) {
+        this.dataType = dataType;
     }
 }

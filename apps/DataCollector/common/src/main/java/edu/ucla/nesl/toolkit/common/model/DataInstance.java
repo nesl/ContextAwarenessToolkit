@@ -1,6 +1,10 @@
 package edu.ucla.nesl.toolkit.common.model;
 
+import android.hardware.Sensor;
+
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by cgshen on 10/6/16.
@@ -8,9 +12,13 @@ import java.io.Serializable;
 
 public class DataInstance implements Serializable {
     private long timestamp;
-    private double[] values;
+    private float[] values;
 
-    public DataInstance(long timestamp, double[] values) {
+    public DataInstance() {
+
+    }
+
+    public DataInstance(long timestamp, float[] values) {
         this.timestamp = timestamp;
         this.values = values.clone();
     }
@@ -23,11 +31,11 @@ public class DataInstance implements Serializable {
         this.timestamp = timestamp;
     }
 
-    public double[] getValues() {
+    public float[] getValues() {
         return values;
     }
 
-    public void setValues(double[] values) {
+    public void setValues(float[] values) {
         this.values = values.clone();
     }
 }

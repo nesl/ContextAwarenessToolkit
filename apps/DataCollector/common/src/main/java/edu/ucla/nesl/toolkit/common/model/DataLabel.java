@@ -1,20 +1,10 @@
 package edu.ucla.nesl.toolkit.common.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by cgshen on 10/6/16.
  */
 
 public class DataLabel {
-    private enum LabelType {
-        INTEGER,
-        NOMINAL,
-        REAL,
-        SENSOR
-    }
-
     private LabelType labelType;
     private int intValue;
     private String nominalValue;
