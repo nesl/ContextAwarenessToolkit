@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">DataCollector</string>
+    <string name="button_start">Start</string>
+    <string name="button_stop">Stop</string>
+    <string name="status_text">Data collection stopped.</string>
+    <string name="data_counter">Counter not enabled</string>
+    <string name="preference_file_key">App_Shared_Pref</string>
+    <string name="saved_rec_flag">Rec_Flag</string>
+    <string name="saved_rec_time">Rec_Time</string>
+    <string name="status_text_start">Data collection started at %1$s.</string>
 </resources>

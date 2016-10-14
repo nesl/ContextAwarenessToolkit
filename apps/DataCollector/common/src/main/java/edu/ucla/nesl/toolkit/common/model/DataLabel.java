@@ -1,10 +1,12 @@
 package edu.ucla.nesl.toolkit.common.model;
 
+import java.io.Serializable;
+
 /**
  * Created by cgshen on 10/6/16.
  */
 
-public class DataLabel {
+public class DataLabel  implements Serializable {
     private LabelType labelType;
     private int intValue;
     private String nominalValue;

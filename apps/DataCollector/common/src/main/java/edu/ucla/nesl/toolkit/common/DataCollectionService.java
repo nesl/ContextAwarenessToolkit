@@ -61,13 +61,18 @@ public class DataCollectionService extends Service implements SensorEventListene
 
     public static void configureDataCollection(DeviceType deviceType, DataVector dataVector) {
         Log.d(TAG, "configureDataCollection()");
-        mDeviceType = deviceType;
-        mDataVector = dataVector;
-        mSensorList = new ArrayList<>();
-        mSensorManager = ((SensorManager) mContext.getSystemService(SENSOR_SERVICE));
-        PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
-        mWakeLock = pm.newWakeLock( PowerManager.PARTIAL_WAKE_LOCK, TAG);
-        mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+        if (mContext != null) {
+            mDeviceType = deviceType;
+            mDataVector = dataVector;
+            mSensorList = new ArrayList<>();
+            mSensorManager = ((SensorManager) mContext.getSystemService(SENSOR_SERVICE));
+            PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+            mWakeLock = pm.newWakeLock( PowerManager.PARTIAL_WAKE_LOCK, TAG);
+            mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+        }
+        else {
+            Log.e(TAG, "Error: context is null.");
+        }
     }
 
     public static void startDataCollection() {
@@ -80,7 +85,7 @@ public class DataCollectionService extends Service implements SensorEventListene
             registerAllSensors();
 
             // Send a vibration feedback
-            mVibrator.vibrate(800);
+            // mVibrator.vibrate(800);
         }
         else {
             Log.e(TAG, "Data collection not configured, call configureDataCollection() first");
@@ -97,7 +102,7 @@ public class DataCollectionService extends Service implements SensorEventListene
         mSensorList = null;
 
         // Send a (shorter) vibration feedback
-        mVibrator.vibrate(300);
+        // mVibrator.vibrate(300);
         mVibrator = null;
 
         // Release wakelock

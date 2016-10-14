@@ -1,10 +1,12 @@
 package edu.ucla.nesl.toolkit.common.model;
 
+import java.io.Serializable;
+
 /**
  * Created by cgshen on 10/12/16.
  */
 
-public class DataType {
+public class DataType implements Serializable {
     private DeviceType deviceType;
     private int sensorType;
 

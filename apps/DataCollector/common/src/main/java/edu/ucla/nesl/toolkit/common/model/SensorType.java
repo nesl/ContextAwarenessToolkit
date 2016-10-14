@@ -2,11 +2,13 @@ package edu.ucla.nesl.toolkit.common.model;
 
 import android.hardware.Sensor;
 
+import java.io.Serializable;
+
 /**
  * Created by cgshen on 10/6/16.
  */
 
-public class SensorType {
+public class SensorType implements Serializable {
     public static final int ANDROID_ACCELEROMETER = Sensor.TYPE_ACCELEROMETER;
     public static final int ANDROID_LINEAR_ACCELERATION = Sensor.TYPE_LINEAR_ACCELERATION;
     public static final int ANDROID_GYROSCOPE = Sensor.TYPE_GYROSCOPE;
