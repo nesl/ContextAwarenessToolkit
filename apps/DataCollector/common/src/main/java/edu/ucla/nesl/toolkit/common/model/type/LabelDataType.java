@@ -1,4 +1,4 @@
-package edu.ucla.nesl.toolkit.common.model;
+package edu.ucla.nesl.toolkit.common.model.type;
 
 import java.io.Serializable;
 
@@ -6,7 +6,7 @@ import java.io.Serializable;
  * Created by cgshen on 10/12/16.
  */
 
-public enum LabelType implements Serializable {
+public enum LabelDataType implements Serializable {
     INTEGER,
     NOMINAL,
     REAL,

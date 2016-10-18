@@ -1,5 +1,7 @@
 package edu.ucla.nesl.toolkit.common.model;
 
+import edu.ucla.nesl.toolkit.common.model.type.DataType;
+
 /**
  * Created by cgshen on 10/12/16.
  */

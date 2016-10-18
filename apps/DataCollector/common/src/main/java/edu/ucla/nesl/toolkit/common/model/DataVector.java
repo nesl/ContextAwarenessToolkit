@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.ucla.nesl.toolkit.common.model.type.DataType;
+import edu.ucla.nesl.toolkit.common.model.type.DeviceType;
+
 /**
  * Created by cgshen on 10/6/16.
  */

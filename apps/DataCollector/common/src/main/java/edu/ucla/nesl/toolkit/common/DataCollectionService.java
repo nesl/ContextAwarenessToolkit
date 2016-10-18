@@ -17,10 +17,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.ucla.nesl.toolkit.common.model.DataInstance;
-import edu.ucla.nesl.toolkit.common.model.DataType;
+import edu.ucla.nesl.toolkit.common.model.LabeledDataVector;
+import edu.ucla.nesl.toolkit.common.model.type.DataType;
 import edu.ucla.nesl.toolkit.common.model.DataVector;
-import edu.ucla.nesl.toolkit.common.model.DeviceType;
-import edu.ucla.nesl.toolkit.common.model.SensorType;
+import edu.ucla.nesl.toolkit.common.model.type.DeviceType;
+import edu.ucla.nesl.toolkit.common.model.type.SensorType;
 
 /**
  * Created by cgshen on 10/11/16.
@@ -33,11 +34,13 @@ public class DataCollectionService extends Service implements SensorEventListene
     private static List<Sensor> mSensorList;
 
     private static Vibrator mVibrator;
-    private static DataCollectionService mContext;
+    private static DataCollectionService mDataCollectionService;
     private static PowerManager.WakeLock mWakeLock;
 
     private static DeviceType mDeviceType;
     private static DataVector mDataVector;
+
+    private static LabelCollectionService mLabelCollectionService;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -55,27 +58,30 @@ public class DataCollectionService extends Service implements SensorEventListene
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand(): id=" + startId);
-        mContext = DataCollectionService.this;
+        mDataCollectionService = DataCollectionService.this;
         return START_STICKY;
     }
 
     public static void configureDataCollection(DeviceType deviceType, DataVector dataVector) {
         Log.d(TAG, "configureDataCollection()");
-        if (mContext != null) {
+        if (mDataCollectionService != null) {
             mDeviceType = deviceType;
             mDataVector = dataVector;
             mSensorList = new ArrayList<>();
-            mSensorManager = ((SensorManager) mContext.getSystemService(SENSOR_SERVICE));
-            PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+            mSensorManager = ((SensorManager)
+                    mDataCollectionService.getSystemService(SENSOR_SERVICE));
+            PowerManager pm = (PowerManager)
+                    mDataCollectionService.getSystemService(Context.POWER_SERVICE);
             mWakeLock = pm.newWakeLock( PowerManager.PARTIAL_WAKE_LOCK, TAG);
-            mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+            mVibrator = (Vibrator) mDataCollectionService.getSystemService(
+                    Context.VIBRATOR_SERVICE);
         }
         else {
             Log.e(TAG, "Error: context is null.");
         }
     }
 
-    public static void startDataCollection() {
+    public static void startDataCollection(Context context) {
         Log.d(TAG, "startDataCollection()");
         if (isDataCollectionConfigured()) {
             // Acquire a wakelock
@@ -84,8 +90,15 @@ public class DataCollectionService extends Service implements SensorEventListene
             // Start the sensor data collection
             registerAllSensors();
 
+            // If necessary, start label collection
+            if (mDataVector instanceof LabeledDataVector) {
+                mLabelCollectionService = new LabelCollectionService(
+                        (LabeledDataVector) mDataVector);
+                mLabelCollectionService.setLabelCollectionAlarm(context);
+            }
+
             // Send a vibration feedback
-            // mVibrator.vibrate(800);
+            mVibrator.vibrate(800);
         }
         else {
             Log.e(TAG, "Data collection not configured, call configureDataCollection() first");
@@ -101,8 +114,14 @@ public class DataCollectionService extends Service implements SensorEventListene
         mSensorList.clear();
         mSensorList = null;
 
+        // If necessary, stop label collection
+        if (mDataVector instanceof LabeledDataVector) {
+            mLabelCollectionService.cancelLabelCollectionAlarm();
+            mLabelCollectionService = null;
+        }
+
         // Send a (shorter) vibration feedback
-        // mVibrator.vibrate(300);
+        mVibrator.vibrate(300);
         mVibrator = null;
 
         // Release wakelock
@@ -132,7 +151,7 @@ public class DataCollectionService extends Service implements SensorEventListene
     private static boolean isDataCollectionConfigured() {
         return mSensorManager != null &&
                 mWakeLock != null &&
-                mContext != null &&
+                mDataCollectionService != null &&
                 mVibrator != null;
     }
 
@@ -146,7 +165,7 @@ public class DataCollectionService extends Service implements SensorEventListene
                         dataType.getSensorType());
                 mSensorList.add(currentSensor);
                 mSensorManager.registerListener(
-                        mContext,
+                        mDataCollectionService,
                         currentSensor,
                         SensorManager.SENSOR_DELAY_FASTEST);
             }
@@ -156,7 +175,7 @@ public class DataCollectionService extends Service implements SensorEventListene
     private static void unregisterAllSensors() {
         // Unregister all sensors in the current configuration
         for (Sensor sensor : mSensorList) {
-            mSensorManager.unregisterListener(mContext, sensor);
+            mSensorManager.unregisterListener(mDataCollectionService, sensor);
         }
     }
 

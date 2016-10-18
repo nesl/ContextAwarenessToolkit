@@ -1,8 +1,6 @@
 package edu.ucla.nesl.toolkit;
 
-import android.*;
 import android.Manifest;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16,17 +14,19 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.io.IOException;
 
 import edu.ucla.nesl.toolkit.common.DataCollectionService;
 import edu.ucla.nesl.toolkit.common.model.DataVector;
-import edu.ucla.nesl.toolkit.common.model.DeviceType;
+import edu.ucla.nesl.toolkit.common.model.InvalidDataVectorTypeException;
+import edu.ucla.nesl.toolkit.common.model.type.DeviceType;
 import edu.ucla.nesl.toolkit.common.model.InvalidSensorTypeException;
-import edu.ucla.nesl.toolkit.common.model.SensorType;
-import edu.ucla.nesl.toolkit.common.util.DataCollectionConfigurator;
+import edu.ucla.nesl.toolkit.common.model.type.LabelDataType;
+import edu.ucla.nesl.toolkit.common.model.type.LabelType;
+import edu.ucla.nesl.toolkit.common.model.type.SensorType;
+import edu.ucla.nesl.toolkit.common.DataCollectionConfigurator;
 import edu.ucla.nesl.toolkit.common.util.TimeString;
 
 public class MainActivity extends AppCompatActivity {
@@ -56,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
                 ContextCompat.checkSelfPermission(this, Manifest.permission.WAKE_LOCK)
                         != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.VIBRATE)
+                        != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.SET_ALARM)
                         != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
                     this,
@@ -63,7 +65,8 @@ public class MainActivity extends AppCompatActivity {
                             Manifest.permission.WRITE_EXTERNAL_STORAGE,
                             Manifest.permission.READ_EXTERNAL_STORAGE,
                             Manifest.permission.WAKE_LOCK,
-                            Manifest.permission.VIBRATE
+                            Manifest.permission.VIBRATE,
+                            Manifest.permission.SET_ALARM
                     },
                     1);
         }
@@ -102,20 +105,33 @@ public class MainActivity extends AppCompatActivity {
         if (!mTracking) {
             try {
                 // Configure the DataVector for data collection
-                DataCollectionConfigurator configurator = new DataCollectionConfigurator(false);
+                DataCollectionConfigurator configurator = new DataCollectionConfigurator(true);
                 configurator.addSensorTypeToVector(
                         DeviceType.ANDROID_PHONE,
                         SensorType.ANDROID_ACCELEROMETER);
                 configurator.addSensorTypeToVector(
                         DeviceType.ANDROID_PHONE,
                         SensorType.ANDROID_GRAVITY);
+                LabelType labelType = new LabelType("ground_truth", LabelDataType.NOMINAL);
+                labelType.setInterval(10);
+                labelType.addCandidateNominalValue("Activity A");
+                labelType.addCandidateNominalValue("Activity B");
+                labelType.addCandidateNominalValue("Activity C");
+                try {
+                    configurator.addLabelType(labelType);
+                }
+                catch (InvalidDataVectorTypeException ex) {
+                    ex.printStackTrace();
+                }
+
+                // Configure the data collection service
                 DataCollectionService.configureDataCollection(
                         DeviceType.ANDROID_PHONE,
                         configurator.getDataVector());
 
                 // Start the data collection
                 mTime = mTimestring.currentTimeForFile();
-                DataCollectionService.startDataCollection();
+                DataCollectionService.startDataCollection(MainActivity.this);
 
                 // Update status
                 mTracking = true;

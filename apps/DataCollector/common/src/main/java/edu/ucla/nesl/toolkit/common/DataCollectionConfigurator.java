@@ -1,18 +1,13 @@
-package edu.ucla.nesl.toolkit.common.util;
+package edu.ucla.nesl.toolkit.common;
 
-import android.renderscript.Element;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import edu.ucla.nesl.toolkit.common.model.DataInstance;
 import edu.ucla.nesl.toolkit.common.model.DataLabel;
 import edu.ucla.nesl.toolkit.common.model.DataVector;
-import edu.ucla.nesl.toolkit.common.model.DeviceType;
+import edu.ucla.nesl.toolkit.common.model.type.DeviceType;
 import edu.ucla.nesl.toolkit.common.model.InvalidDataVectorTypeException;
 import edu.ucla.nesl.toolkit.common.model.InvalidSensorTypeException;
-import edu.ucla.nesl.toolkit.common.model.LabelType;
+import edu.ucla.nesl.toolkit.common.model.type.LabelDataType;
 import edu.ucla.nesl.toolkit.common.model.LabeledDataVector;
+import edu.ucla.nesl.toolkit.common.model.type.LabelType;
 
 /**
  * Created by cgshen on 10/6/16.
@@ -42,9 +37,9 @@ public class DataCollectionConfigurator {
         this.dataVector.addDataType(deviceType, sensorType);
     }
 
-    public void addLabel(LabelType labelType) throws InvalidDataVectorTypeException {
+    public void addLabelType(LabelType labelType) throws InvalidDataVectorTypeException {
         if (this.dataVector instanceof LabeledDataVector) {
-            ((LabeledDataVector) this.dataVector).setLabel(new DataLabel(labelType));
+            ((LabeledDataVector) this.dataVector).addLabelType(labelType);
         }
         else {
             throw new InvalidDataVectorTypeException(

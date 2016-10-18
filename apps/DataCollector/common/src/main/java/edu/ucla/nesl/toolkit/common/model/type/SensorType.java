@@ -1,8 +1,10 @@
-package edu.ucla.nesl.toolkit.common.model;
+package edu.ucla.nesl.toolkit.common.model.type;
 
 import android.hardware.Sensor;
 
 import java.io.Serializable;
+
+import edu.ucla.nesl.toolkit.common.model.InvalidSensorTypeException;
 
 /**
  * Created by cgshen on 10/6/16.

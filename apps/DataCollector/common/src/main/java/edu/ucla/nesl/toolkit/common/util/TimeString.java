@@ -11,6 +11,10 @@ public class TimeString {
     private SimpleDateFormat formatForDisplay = new SimpleDateFormat("MM/dd HH:mm:ss");
     private SimpleDateFormat timeForDisplay = new SimpleDateFormat("HH:mm:ss");
 
+    public long currentTimestamp() {
+        return new Date().getTime();
+    }
+
     public String currentTimeForFile() {
         return formatForFile.format(new Date());
     }

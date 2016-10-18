@@ -1,4 +1,4 @@
-package edu.ucla.nesl.toolkit.common.model;
+package edu.ucla.nesl.toolkit.common.model.type;
 
 import java.io.Serializable;
 
