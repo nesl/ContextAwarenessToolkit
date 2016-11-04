@@ -16,7 +16,7 @@ from sklearn import cross_validation
 from sklearn.cross_validation import cross_val_score
 from sklearn.cross_validation import KFold
 
-def Classify(AbstractModule):
+class Classify(AbstractModule):
 	def __init__(self):
 		self.model_path = './'
 		self.use_top_features = True

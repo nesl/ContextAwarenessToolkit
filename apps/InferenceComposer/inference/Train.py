@@ -11,7 +11,9 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_recall_fscore_support
 from operator import itemgetter
 
-def Train(AbstractModule):
+from inference.AbstractModule import AbstractModule
+
+class Train(AbstractModule):
     def __init__(self):
         self.use_top_features = True
         self.model_prefix = ''

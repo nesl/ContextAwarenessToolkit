@@ -1,23 +1,22 @@
 import numpy as np
 
-class Preprocess(AbstractModule):
-    def __init__(self):
-        # Default window size: 1s
-        self.window_size = 1
+from inference.AbstractModule import AbstractModule
 
-        # TODO: make columns configurable
-        self.columns = ['time', 'accx', 'accy', 'accz', 'label']
+class Preprocess(AbstractModule):
+    def __init__(self, _window_size, _data_columns):
+        self.window_size = _window_size
+        self.columns = _data_columns
 
     def moving_average(self, interval, window_size):
         """
-        Use a window of +/-0.5 seconds
+        Smooth data by applying a moving average window
         """
-        window = np.ones(int(window_size))/float(window_size)
+        window = np.ones(int(window_size)) / float(window_size)
         return np.convolve(interval, window, 'same')
 
     def smooth(self, data):
         """
-        Smooth a data frame using a moving average window
+        Smooth a data frame
         """
         data.columns = self.columns
            
@@ -25,9 +24,9 @@ class Preprocess(AbstractModule):
         x = data.ix[:,1]
         y = data.ix[:,2]
         z = data.ix[:,3]
-        x_av = self.moving_average(x, 5)
-        y_av = self.moving_average(y, 5)
-        z_av = self.moving_average(z, 5)
+        x_av = self.moving_average(x, self.window_size)
+        y_av = self.moving_average(y, self.window_size)
+        z_av = self.moving_average(z, self.window_size)
         data.ix[:,1] = x_av
         data.ix[:,2] = y_av
         data.ix[:,3] = z_av

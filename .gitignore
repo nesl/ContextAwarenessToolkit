@@ -41,3 +41,7 @@ captures/
 
 # Python temp files
 *.pyc
+__pycache__/
+
+# Temp data
+external_data/
