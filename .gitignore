@@ -44,4 +44,4 @@ captures/
 __pycache__/
 
 # Temp data
-external_data/
+apps/InferenceComposer/external_data
