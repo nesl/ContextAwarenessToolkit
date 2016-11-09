@@ -1,6 +1,7 @@
 import numpy as np
 import scipy as sp
 import pandas as pd
+from sklearn_pandas import DataFrameMapper
 
 import math
 
@@ -49,6 +50,19 @@ class Feature(AbstractModule):
         Calculate RMS
         """
         return np.sqrt(x.dot(x)/x.size)
+
+    def get_mapper(self):
+        """
+        Return the data frame mapper based on feature names + ground truth
+        """
+        if self.features is not None:
+            return DataFrameMapper(
+                [
+                    (feature_name, None) for feature_name in self.features 
+                    + [LABEL]
+                ]
+            )
+
 
     def calculate_feature(self, name, sample):
         """

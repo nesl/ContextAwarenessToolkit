@@ -1,7 +1,7 @@
 import os
 import numpy as np
-from sklearn import tree
-from sklearn.svm import SVC, LinearSVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.externals import joblib
 from sklearn.cross_validation import KFold
@@ -41,11 +41,11 @@ class Classifier(AbstractModule):
         i.e. automatic mode.
         """
         self.classifiers = {
-            'dt5': tree.DecisionTreeClassifier(max_depth=5), \
-            'dt8': tree.DecisionTreeClassifier(max_depth=8), \
-            'rf': RandomForestClassifier(n_estimators=64, max_features=6), \
-            'lsvm': SVC(kernel='rbf', gamma=0.5) , \
-            'gsvm': LinearSVC(C=0.01, penalty='l1', dual=False)
+            'dt_depth5': DecisionTreeClassifier(max_depth=5), \
+            'dt_depth8': DecisionTreeClassifier(max_depth=8), \
+            'rf_64x6': RandomForestClassifier(n_estimators=64, max_features=6), \
+            'svm_rbf': SVC(kernel='rbf', gamma=0.5) , \
+            'svm_linear': SVC(kernel='linear', C=0.01)
         }
 
 

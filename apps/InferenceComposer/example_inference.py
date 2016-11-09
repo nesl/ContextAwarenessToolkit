@@ -2,6 +2,7 @@ import pandas as pd
 from inference.Preprocess import Preprocess
 from inference.Feature import Feature
 from inference.Classifier import Classifier
+from util import export_model
 
 DATA_PATH = (
 		'external_data/data_collection_new_2016/'
@@ -11,6 +12,10 @@ FILENAME = DATA_PATH + 'all_data_acc_50hz.label.acc'
 MODEL_PATH = (
 		'external_data/data_collection_new_2016/'
 		'hl_classifier/inference_composer_model_dump/'
+	)
+MODEL_PMML_PATH = (
+		'external_data/data_collection_new_2016/'
+		'hl_classifier/inference_composer_model_pmml/'
 	)
 
 
@@ -41,73 +46,34 @@ def compose_inference(filename=FILENAME):
 		_data_columns=raw_data_columns,
 		_features=features
 	)
-	feature_vector = feature_calculator.process(processed_data[:])
+	feature_vector = feature_calculator.process(processed_data[:50000])
+	feature_mapper = feature_calculator.get_mapper()
 	print(feature_vector.shape)
 
 	# Training with default classifiers
 	classifier = Classifier(
-		_save_model=True,
+		_save_model=False,
 	    _model_path=MODEL_PATH,
 	    _use_top_features=False,
 	    _top_features=None,
-	    _test_index=60000, 
+	    _test_index=600, 
         _show_report=True,
-        _cross_validation=True,
+        _cross_validation=False,
         _cv_fold=10
 	)
 	classifier.add_default_classifiers()
 	trained_classifiers = classifier.process(feature_vector)
 	print(len(trained_classifiers))
 
+	# Export models as PMML
+	for name, classifier in trained_classifiers.items():
+		export_model(
+			name, 
+			classifier, 
+			feature_mapper, 
+			MODEL_PMML_PATH
+		)
+
+
 if __name__ == "__main__":
     compose_inference()
-
-
-def export_model():
-	"""
-	Placeholder for scikit model -> PMML -> Java/Android runtime
-
-	Code taken from the example in https://github.com/jpmml/sklearn2pmml
-	"""
-	# #
-	# # Step 1: feature engineering
-	# #
-
-	# from sklearn.datasets import load_iris
-	# from sklearn.decomposition import PCA
-
-	# from sklearn2pmml.decoration import ContinuousDomain
-
-	# import pandas
-	# import sklearn_pandas
-
-	# iris = load_iris()
-
-	# iris_df = pandas.concat((pandas.DataFrame(iris.data[:, :], columns = ["Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width"]), pandas.DataFrame(iris.target, columns = ["Species"])), axis = 1)
-
-	# iris_mapper = sklearn_pandas.DataFrameMapper([
-	#     (["Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width"], [ContinuousDomain(), PCA(n_components = 3)]),
-	#     ("Species", None)
-	# ])
-
-	# iris = iris_mapper.fit_transform(iris_df)
-
-	# #
-	# # Step 2: training a logistic regression model
-	# #
-
-	# from sklearn.linear_model import LogisticRegressionCV
-
-	# iris_X = iris[:, 0:3]
-	# iris_y = iris[:, 3]
-
-	# iris_classifier = LogisticRegressionCV()
-	# iris_classifier.fit(iris_X, iris_y)
-
-	# #
-	# # Step 3: conversion to PMML
-	# #
-
-	# from sklearn2pmml import sklearn2pmml
-
-	# sklearn2pmml(iris_classifier, iris_mapper, "LogisticRegressionIris.pmml", with_repr = True)

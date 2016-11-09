@@ -1,10 +1,15 @@
 import numpy as np
+import pandas as pd
+
+import os
+
 from sklearn import metrics
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import classification_report
+from sklearn2pmml import sklearn2pmml
 
 
 def remove_nan(X, y):
@@ -41,6 +46,18 @@ def show_accuracy(ground_truth, predicted):
     print(precision_recall_fscore_support(ground_truth, predicted))
     print(classification_report(ground_truth, predicted))
     return acc_score, prec_score, recl_score
+
+
+def export_model(name, classifier, mapper, path):
+    """
+    Export a classifier into PMML using the jpmml library
+    """
+    print('Exporting model ', name, ' to PMML...')
+    sklearn2pmml(
+        estimator=classifier, 
+        mapper=mapper, 
+        pmml=os.path.join(path, name + '.pmml')
+    )
 
 
 def show_label_distribution(data):
