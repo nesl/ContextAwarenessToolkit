@@ -1,3 +1,48 @@
+import numpy as np
+from sklearn import metrics
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import precision_recall_fscore_support
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import classification_report
+
+
+def remove_nan(X, y):
+    """
+    Remove nan data from feature calculation
+    """
+    newX = []
+    newY = []
+    for i in range(0, len(X)):
+        lst = X[i]
+        lbl = y[i]
+        flag = True
+        for i in lst:
+            if np.isnan(i):
+                flag = False
+                break
+        if flag:
+            newX.append(lst)
+            newY.append(lbl)
+    return np.array(newX), np.array(newY)
+
+
+def show_accuracy(ground_truth, predicted):
+    """
+    Print statistics from classification results
+    """
+    acc_score = accuracy_score(ground_truth, predicted)
+    prec_score = precision_score(ground_truth, predicted, average='weighted')
+    recl_score = recall_score(ground_truth, predicted, average='weighted')
+    print('--- Accuracy: ', acc_score)
+    print('--- Precision: ', prec_score)
+    print('--- Recall: ', recl_score)
+    print('--- Classification report: ')
+    print(precision_recall_fscore_support(ground_truth, predicted))
+    print(classification_report(ground_truth, predicted))
+    return acc_score, prec_score, recl_score
+
+
 def show_label_distribution(data):
     """
     Print the distribution of labels in a data frame

@@ -85,11 +85,12 @@ class Feature(AbstractModule):
             percentile = int(name[3:]) * 0.25
             return sample.quantile(percentile).mean()
         elif name.startswith(FFT):
-            temp_dft = 0
-            for axis in ACC: 
-                temp_dft += self.energy(sample[axis])
+            temp_dft = self.energy(sample[ACCX])
             freq = int(name[3:])
-            return np.mean(temp_dft[freq + 1])
+            if (freq + 1 < len(temp_dft)):
+                return np.mean(temp_dft[freq + 1])
+            else:
+                return 0
         else:
             raise ValueError('Invalid requested feature name: ' + name)
 
