@@ -1,4 +1,3 @@
-import os
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
@@ -6,15 +5,22 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.externals import joblib
 from sklearn.cross_validation import KFold
 from operator import itemgetter
+from sklearn2pmml import sklearn2pmml
 
-from inference.AbstractModule import AbstractModule
-from inference import Feature
+import json
+import os
+
+from inference import ModuleBase
+from inference.Feature import Feature
 from util import remove_nan, show_accuracy
 
 
-class Classifier(AbstractModule):
+class Classifier(ModuleBase.ModuleBase):
+    module_type = ModuleBase.MOD_CLASSIFIER
+
     def __init__(
             self,
+            _feature_mapper,
             _save_model=False,
             _model_path=None,
             _use_top_features=False,
@@ -23,6 +29,7 @@ class Classifier(AbstractModule):
             _show_report=False,
             _cross_validation=False,
             _cv_fold=10):
+        self.feature_mapper = _feature_mapper
         self.save_model = _save_model
         self.model_path = _model_path
         self.use_top_features = _use_top_features
@@ -124,8 +131,8 @@ class Classifier(AbstractModule):
         Train a set of classifiers on a feature vector
         """
         # Check that data has timestamp and label
-        if (Feature.LABEL not in data.columns or
-                Feature.TIMESTAMP not in data.columns):
+        if (ModuleBase.LABEL not in data.columns or
+                ModuleBase.TIMESTAMP not in data.columns):
             raise ValueError('Error: invalid feature vector format.')
 
         # Check that we have a set of classifiers to train
@@ -173,3 +180,37 @@ class Classifier(AbstractModule):
 
         # Return the list of trained classifiers
         return self.classifiers
+
+    def export(self):
+        """
+        Export this module to json
+        """
+        result = []
+        for name, classifier in self.classifiers.items():
+            # Export models as PMML
+            pmml_path = export_model(
+                name, 
+                classifier, 
+                self.feature_mapper, 
+                self.model_path
+            )
+            current_classifier = {
+                ModuleBase.CLASSIFIER_NAME: name,
+                ModuleBase.CLASSIFIER_PMML: pmml_path
+            }
+            result.append(current_classifier)
+        return json.dumps(result)
+
+
+def export_model(name, classifier, mapper, path):
+    """
+    Export a classifier into PMML using the jpmml library
+    """
+    print('Exporting model ', name, ' to PMML...')
+    pmml_path = os.path.join(path, name + '.pmml')
+    sklearn2pmml(
+        estimator=classifier, 
+        mapper=mapper, 
+        pmml=pmml_path
+    )
+    return pmml_path

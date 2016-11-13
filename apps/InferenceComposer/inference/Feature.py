@@ -3,12 +3,10 @@ import scipy as sp
 import pandas as pd
 from sklearn_pandas import DataFrameMapper
 
+import json
 import math
 
-from inference.AbstractModule import AbstractModule
-
-TIMESTAMP = 'time'
-LABEL = 'label'
+from inference import ModuleBase
 
 # Pre-defined feature name
 MEAN = 'mean'
@@ -26,13 +24,10 @@ MAG = 'mag'
 QUA = 'qua'
 FFT = 'fft'
 
-ACCX = 'accx'
-ACCY = 'accy'
-ACCZ = 'accz'
-ACC = [ACCX, ACCY, ACCZ]
 
+class Feature(ModuleBase.ModuleBase):
+    module_type = ModuleBase.MOD_FEATURE
 
-class Feature(AbstractModule):
     def __init__(self, _window_size, _data_columns, _features):
         self.window_size = _window_size
         self.data_columns = _data_columns
@@ -59,16 +54,16 @@ class Feature(AbstractModule):
             return DataFrameMapper(
                 [
                     (feature_name, None) for feature_name in self.features 
-                    + [LABEL]
+                    + [ModuleBase.LABEL]
                 ]
             )
-
 
     def calculate_feature(self, name, sample):
         """
         Perform feature calculation based on the requested name
         """
-        if name == TIMESTAMP or name == LABEL:
+        if (name == ModuleBase.TIMESTAMP or 
+                name == ModuleBase.LABEL):
             return None
 
         if name == MEAN:
@@ -87,19 +82,19 @@ class Feature(AbstractModule):
             return (sample.max() - sample.min()).mean()
         elif name == RMS:
             axis_rms = []
-            for axis in ACC:
+            for axis in ModuleBase.ACC:
                 axis_rms.append(self.rms(sample[axis]))
             return np.mean(axis_rms)
         elif name == MAG:
             temp_mag = 0
-            for axis in ACC:
+            for axis in ModuleBase.ACC:
                 temp_mag += sample[axis]**2
             return np.mean(np.sqrt(temp_mag))
         elif name.startswith(QUA):
             percentile = int(name[3:]) * 0.25
             return sample.quantile(percentile).mean()
         elif name.startswith(FFT):
-            temp_dft = self.energy(sample[ACCX])
+            temp_dft = self.energy(sample[ModuleBase.ACCX])
             freq = int(name[3:])
             if (freq + 1 < len(temp_dft)):
                 return np.mean(temp_dft[freq + 1])
@@ -110,22 +105,21 @@ class Feature(AbstractModule):
 
         return feature
 
-
     def process(self, data):
         """
         Calculate specified features from a data frame
         """
         # Prepare the data vector
         data.columns = self.data_columns
-        if TIMESTAMP in self.data_columns:
-            self.data_columns.remove(TIMESTAMP)
-        if LABEL in self.data_columns:
-            self.data_columns.remove(LABEL)
+        if ModuleBase.TIMESTAMP in self.data_columns:
+            self.data_columns.remove(ModuleBase.TIMESTAMP)
+        if ModuleBase.LABEL in self.data_columns:
+            self.data_columns.remove(ModuleBase.LABEL)
 
         # Prepare the feature vector
         feature_columns = list(self.features)
-        feature_columns.insert(0, TIMESTAMP)
-        feature_columns.append(LABEL)
+        feature_columns.insert(0, ModuleBase.TIMESTAMP)
+        feature_columns.append(ModuleBase.LABEL)
         feature_vector = pd.DataFrame(columns=feature_columns)
 
         # number of samples processed
@@ -138,8 +132,8 @@ class Feature(AbstractModule):
         while count < len(data):
             # Group data by window_size and get data
             cur_time = math.floor(data.iloc[count, 0])
-            sample = data[(data[TIMESTAMP] >= cur_time) & (
-                data[TIMESTAMP] < cur_time + self.window_size)]
+            sample = data[(data[ModuleBase.TIMESTAMP] >= cur_time) & (
+                data[ModuleBase.TIMESTAMP] < cur_time + self.window_size)]
             sample_data = sample[self.data_columns]
 
             # Create feature vector for this sample and set timestamp
@@ -153,7 +147,7 @@ class Feature(AbstractModule):
                 )
 
             # Calculate ground truth label (majority in this second)
-            label = sample[LABEL].value_counts().idxmax()
+            label = sample[ModuleBase.LABEL].value_counts().idxmax()
             current_feature.append(int(label))
             
             # Append the current feature vector to the entire matrix
@@ -164,3 +158,14 @@ class Feature(AbstractModule):
             idx = idx + 1
 
         return feature_vector
+
+    def export(self):
+        """
+        Export this module to json
+        """
+        result = {
+            ModuleBase.WINDOW_SIZE: self.window_size,
+            ModuleBase.DATA_COLUMN: self.data_columns,
+            ModuleBase.FEATURE: self.features
+        }
+        return json.dumps(result)
