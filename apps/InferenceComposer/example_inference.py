@@ -11,7 +11,7 @@ from util import export_inference
 DATA_PATH = 'external_data/inference_composer/data/'
 DATA_FILENAME = DATA_PATH + 'all_data_acc_50hz.label.acc'
 MODEL_PATH = 'external_data/inference_composer/model/'
-
+INF_FILENAME = MODEL_PATH + 'inference_pipeline.json'
 
 def compose_inference(filename=DATA_FILENAME):
 	# Read sensor raw data from a file
@@ -60,7 +60,7 @@ def compose_inference(filename=DATA_FILENAME):
 		_data_columns=raw_data_columns,
 		_features=features
 	)
-	feature_vector = feature_calculator.process(processed_data[])
+	feature_vector = feature_calculator.process(processed_data[:50000])
 	print(feature_vector.shape)
 
 	# Training with default classifiers
@@ -70,7 +70,7 @@ def compose_inference(filename=DATA_FILENAME):
 	    _model_path=MODEL_PATH,
 	    _use_top_features=False,
 	    _top_features=None,
-	    _test_index=None, 
+	    _test_index=600, 
         _show_report=False,
         _cross_validation=False,
         _cv_fold=10
@@ -79,15 +79,16 @@ def compose_inference(filename=DATA_FILENAME):
 	trained_classifiers = classifiers.process(feature_vector)
 	print(len(trained_classifiers))
 
-	# Export the inference pipeline to JSON
-	print(json.dumps(
-		json.loads(export_inference(
-			[pre_processor, feature_calculator, classifiers]
-		)),
-		sort_keys=True,
-		indent=4,
-		separators=(',', ': ')
-	))
+	# Export the inference pipeline to a JSON file
+	with open(INF_FILENAME, 'w') as fout:
+		fout.write(json.dumps(
+			json.loads(export_inference(
+				[pre_processor, feature_calculator, classifiers]
+			)),
+			sort_keys=True,
+			indent=4,
+			separators=(',', ': ')
+		))
 
 
 if __name__ == "__main__":

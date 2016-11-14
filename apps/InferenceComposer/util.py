@@ -56,7 +56,7 @@ def export_inference(modules):
     """
     result = {}
     for module in modules:
-        result[module.module_type] = module.export()
+        result[module.module_type] = json.loads(module.export())
     return json.dumps(result)
 
 

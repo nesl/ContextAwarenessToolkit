@@ -6,11 +6,9 @@ package edu.ucla.nesl.toolkit.util;
  * https://github.com/jpmml/jpmml-mode
  */
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import javax.xml.transform.Source;
 
 import org.dmg.pmml.PMML;
@@ -23,30 +21,48 @@ import org.xml.sax.InputSource;
 
 public class PMMLTransformer {
     public static void main(String[] args) throws Exception {
-        // Get the pmml file name
+        // Get the pmml path
         if (args.length != 1) {
-            System.out.println("Error: please pass in the path to a pmml model.");
+            System.out.println("Error: please pass in the path to pmml models.");
             System.exit(1);
         }
-        File pmmlFile = new File(args[0]);
-        File serFile = new File(args[0] + ".ser");
 
-        // Parse a pmml object from a file
-        PMML pmml;
-        try (InputStream is = new FileInputStream(pmmlFile)) {
-            Source source = ImportFilter.apply(new InputSource(is));
-            pmml = JAXBUtil.unmarshalPMML(source);
-        }
+        // Traverse the directory and transform all PMML files
+        Path pmmlPath = Paths.get(args[0]);
+        FileVisitor<Path> pmmlVisitor = new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                    throws IOException {
+                System.out.println(file.getFileName());
+                if (file.getFileName().toString().endsWith(".pmml")) {
+                    System.out.println(
+                            "Tranforming " + file.getFileName() + " to SER...");
 
-        // Apply visitors
-        StringInterner stringInterner = new StringInterner();
-        stringInterner.applyTo(pmml);
-        LocatorNullifier locatorNullifier = new LocatorNullifier();
-        locatorNullifier.applyTo(pmml);
+                    // Parse a pmml object from a file
+                    PMML pmml;
+                    try {
+                        InputStream is = new FileInputStream(file.toFile());
+                        Source source = ImportFilter.apply(new InputSource(is));
+                        pmml = JAXBUtil.unmarshalPMML(source);
 
-        // Write an ser file from the pmml object
-        try (OutputStream os = new FileOutputStream(serFile)) {
-            SerializationUtil.serializePMML(pmml, os);
-        }
+                        // Apply visitors
+                        StringInterner stringInterner = new StringInterner();
+                        stringInterner.applyTo(pmml);
+                        LocatorNullifier locatorNullifier = new LocatorNullifier();
+                        locatorNullifier.applyTo(pmml);
+
+                        // Write an ser file from the pmml object
+                        OutputStream os = new FileOutputStream(
+                                new File(file.toFile().getAbsolutePath() + ".ser"));
+                        SerializationUtil.serializePMML(pmml, os);
+                    }
+                    catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        };
+        Files.walkFileTree(pmmlPath, pmmlVisitor);
     }
 }
