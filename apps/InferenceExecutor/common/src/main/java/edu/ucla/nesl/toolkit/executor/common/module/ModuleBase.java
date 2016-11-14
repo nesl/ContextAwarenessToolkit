@@ -6,9 +6,9 @@ package edu.ucla.nesl.toolkit.executor.common.module;
  */
 
 public interface ModuleBase {
-    // Load from a json string
-    void load(String jsonFile);
+    String getModuleType();
 
     // Process a data vector
-    float process(float[] data);
+    float[] process(float[] data);
+
 }

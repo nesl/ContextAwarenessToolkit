@@ -1,0 +1,62 @@
+{
+    "mod_classifier": [
+        {
+            "classifier_name": "svm_rbf",
+            "classifier_pmml": "external_data/inference_composer/model/svm_rbf.pmml"
+        },
+        {
+            "classifier_name": "rf_64x6",
+            "classifier_pmml": "external_data/inference_composer/model/rf_64x6.pmml"
+        },
+        {
+            "classifier_name": "dt_depth8",
+            "classifier_pmml": "external_data/inference_composer/model/dt_depth8.pmml"
+        },
+        {
+            "classifier_name": "dt_depth5",
+            "classifier_pmml": "external_data/inference_composer/model/dt_depth5.pmml"
+        },
+        {
+            "classifier_name": "svm_linear",
+            "classifier_pmml": "external_data/inference_composer/model/svm_linear.pmml"
+        }
+    ],
+    "mod_feature": {
+        "data_column": [
+            "accx",
+            "accy",
+            "accz"
+        ],
+        "feature": [
+            "mean",
+            "std",
+            "var",
+            "mad",
+            "rms",
+            "mag",
+            "range",
+            "skew",
+            "kurt",
+            "qua1",
+            "qua2",
+            "qua3",
+            "fft1",
+            "fft2",
+            "fft3",
+            "fft4",
+            "fft5"
+        ],
+        "window_size": 1
+    },
+    "mod_preprocess": {
+        "data_column": [
+            "accx",
+            "accy",
+            "accz"
+        ],
+        "operator": [
+            "moving_avg_smooth"
+        ],
+        "window_size": 5
+    }
+}

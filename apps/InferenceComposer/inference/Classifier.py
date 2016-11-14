@@ -181,9 +181,16 @@ class Classifier(ModuleBase.ModuleBase):
         # Return the list of trained classifiers
         return self.classifiers
 
+    def rank(self):
+        """
+        Find the best classifiers possible
+        """
+        raise NotImplementedError('Not implemented!')
+
     def export(self):
         """
         Export this module to json
+        TODO: when exporting, specify the best model
         """
         result = []
         for name, classifier in self.classifiers.items():

@@ -4,10 +4,27 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+import edu.ucla.nesl.toolkit.executor.common.module.InferencePipeline;
+import edu.ucla.nesl.toolkit.executor.common.util.InferencePipelineBuilder;
+
 public class InferenceManagerService extends Service {
+    private static final String TAG = "InfMgrService";
+    private static final String INF_JSON = "inference_pipeline.json";
+
     private static String deviceType;
 
     public InferenceManagerService() {
+    }
+
+    public void configureRule() {
+        // Phone first, watch first, etc.
+    }
+
+    public void configureInfereceExecution() {
+        InferencePipeline pipeline = InferencePipelineBuilder.buildFromJSON(
+                getApplicationContext(),
+                INF_JSON);
+        new InferenceExecutor(pipeline, 10, 10);
     }
 
     @Override
