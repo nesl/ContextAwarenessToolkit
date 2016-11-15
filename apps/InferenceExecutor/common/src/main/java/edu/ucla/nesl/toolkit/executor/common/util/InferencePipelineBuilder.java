@@ -1,6 +1,7 @@
 package edu.ucla.nesl.toolkit.executor.common.util;
 
 import android.content.Context;
+import android.hardware.Sensor;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import edu.ucla.nesl.toolkit.executor.common.module.Classifier;
@@ -23,7 +25,7 @@ import edu.ucla.nesl.toolkit.executor.common.module.StringConstant;
  */
 
 public class InferencePipelineBuilder {
-    private static final String TAG = "util.InfPipelineBuilder";
+    private static final String TAG = "InfPipelineBuilder";
 
     public static InferencePipeline buildFromJSON(Context context, String filename) {
         // Load json from a file in assets
@@ -47,11 +49,32 @@ public class InferencePipelineBuilder {
         InferencePipeline inferencePipeline = null;
         try {
             JSONObject json = new JSONObject(jsonStr);
+            inferencePipeline = new InferencePipeline();
 
             // Parse pre-processing
             if (json.has(StringConstant.MOD_PREPROCESS)) {
                 JSONObject jsonPreprocess = json.getJSONObject(StringConstant.MOD_PREPROCESS);
                 Preprocess preprocessor = new Preprocess();
+
+                // Parse data columns and specify sensors
+                if (jsonPreprocess.has(StringConstant.DATA_COLUMN)) {
+                    JSONArray jsonColumns = jsonPreprocess.getJSONArray(StringConstant.DATA_COLUMN);
+                    for (int i = 0; i < jsonColumns.length(); i++) {
+                        String name = jsonColumns.getString(i);
+                        if (Arrays.asList(StringConstant.ACC).contains(name)) {
+                            inferencePipeline.addSensorType(Sensor.TYPE_ACCELEROMETER);
+                        }
+                        else if (Arrays.asList(StringConstant.GRAV).contains(name)) {
+                            inferencePipeline.addSensorType(Sensor.TYPE_GRAVITY);
+                        }
+                        else if (Arrays.asList(StringConstant.GYRO).contains(name)) {
+                            inferencePipeline.addSensorType(Sensor.TYPE_GYROSCOPE);
+                        }
+                        else {
+                            Log.e(TAG, "Error: invalid sensor type: " + name);
+                        }
+                    }
+                }
 
                 // Parse window size
                 if (jsonPreprocess.has(StringConstant.WINDOW_SIZE))

@@ -16,6 +16,14 @@ public class StringConstant {
     public static final String ACCY = "accy";
     public static final String ACCZ = "accz";
     public static final String[] ACC = {ACCX, ACCY, ACCZ};
+    public static final String GYROX = "gyrox";
+    public static final String GYROY = "gyroy";
+    public static final String GYROZ = "gyroz";
+    public static final String[] GYRO = {GYROX, GYROY, GYROZ};
+    public static final String GRAVX = "gravx";
+    public static final String GRAVY = "gravy";
+    public static final String GRAVZ = "gravz";
+    public static final String[] GRAV = {GRAVX, GRAVY, GRAVZ};
 
     // Pre-processing
     public static final String DATA_COLUMN = "data_column";
