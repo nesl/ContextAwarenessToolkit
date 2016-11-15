@@ -16,6 +16,7 @@ public class InferencePipeline {
     private Set<Integer> sensors;
     private List<ModuleBase> modules;
     private List<String> dataColumns;
+    private int maxWindowSize = 0;
 
     public InferencePipeline() {
         this.modules = new ArrayList<>();
@@ -34,6 +35,16 @@ public class InferencePipeline {
 
     public void addModule(ModuleBase module) {
         this.modules.add(module);
+
+        // Update the max buffer size
+        if (module instanceof Preprocess)
+            this.maxWindowSize = Math.max(
+                    this.maxWindowSize,
+                    ((Preprocess) module).getWindowSize());
+        if (module instanceof Feature)
+            this.maxWindowSize = Math.max(
+                    this.maxWindowSize,
+                    ((Feature) module).getWindowSize());
     }
 
     public void addDataColumn(String name) {

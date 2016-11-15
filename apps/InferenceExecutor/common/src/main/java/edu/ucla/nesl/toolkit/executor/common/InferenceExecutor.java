@@ -13,11 +13,19 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import edu.ucla.nesl.toolkit.common.model.DataInstance;
+import edu.ucla.nesl.toolkit.common.model.DataVector;
+import edu.ucla.nesl.toolkit.common.model.type.DataType;
+import edu.ucla.nesl.toolkit.common.model.type.DeviceType;
 import edu.ucla.nesl.toolkit.executor.common.ble.BLEDataMapClient;
+import edu.ucla.nesl.toolkit.executor.common.module.Classifier;
 import edu.ucla.nesl.toolkit.executor.common.module.DataInterface;
+import edu.ucla.nesl.toolkit.executor.common.module.Feature;
 import edu.ucla.nesl.toolkit.executor.common.module.InferencePipeline;
+import edu.ucla.nesl.toolkit.executor.common.module.Preprocess;
 
 /**
  * Created by cgshen on 11/13/16.
@@ -29,10 +37,12 @@ public abstract class InferenceExecutor
     private final static String TAG = "InfExecutor";
 
     private InferencePipeline mInferencePipeline;
-    private DataInterface source;
-    private DataInterface sink;
     private long interval;
     private long duration;
+
+    private DeviceType deviceType;
+    private DataInterface source;
+    private DataInterface sink;
 
     private SensorManager mSensorManager;
     private BLEDataMapClient mBleClient;
@@ -41,28 +51,30 @@ public abstract class InferenceExecutor
     private static int numThreads;
     private static final Object lock = new Object();
 
-    private List<List<Float>> dataBuffer;
+    private DataVector dataBuffer;
 
     public InferenceExecutor() {
-
-    }
-
-    public InferenceExecutor(InferencePipeline mInferencePipeline, long interval, long duration) {
-        this.mInferencePipeline = mInferencePipeline;
-        this.interval = interval;
-        this.duration = duration;
-
         // By default, the entire inference runs on a single device
         this.source = DataInterface.SENSOR;
         this.sink = DataInterface.NOTIFICATION;
     }
 
+    public InferenceExecutor(DeviceType deviceType, long interval, long duration) {
+        this.deviceType = deviceType;
+        this.interval = interval;
+        this.duration = duration;
+        this.source = DataInterface.SENSOR;
+        this.sink = DataInterface.NOTIFICATION;
+    }
+
     public InferenceExecutor(
+            DeviceType deviceType,
             InferencePipeline mInferencePipeline,
             DataInterface source,
             DataInterface sink,
             long interval,
             long duration) {
+        this.deviceType = deviceType;
         this.mInferencePipeline = mInferencePipeline;
         this.source = source;
         this.sink = sink;
@@ -86,7 +98,6 @@ public abstract class InferenceExecutor
         Log.i(TAG, "Alarm cancelled.");
     }
 
-
     @Override
     public void onReceive(Context context, Intent intent) {
         PowerManager mPowerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -103,8 +114,12 @@ public abstract class InferenceExecutor
         // Setup data source (sensor or getting from radio)
         if (source == DataInterface.SENSOR) {
             // Start inference
+            dataBuffer = new DataVector();
             mSensorManager = ((SensorManager) context.getSystemService(Context.SENSOR_SERVICE));
             for (int sensorType : mInferencePipeline.getSensors()) {
+                // Initialize the data vector
+                dataBuffer.addDataType(this.deviceType, sensorType);
+
                 // Register the listener for the requested sensor type
                 Sensor currentSensor = mSensorManager.getDefaultSensor(sensorType);
                 if (currentSensor != null) {
@@ -150,6 +165,20 @@ public abstract class InferenceExecutor
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         // Perform the actual inference using mInferencePipeline
+        dataBuffer.addDataInstance(
+                this.deviceType,
+                sensorEvent.sensor.getType(),
+                new DataInstance(sensorEvent.timestamp, sensorEvent.values));
+        // TODO: enable DataVector to specify buffer size, sub-indexing, etc.
+
+        new Classifier().process(
+            new Feature().process(
+                new Preprocess().process(dataBuffer.getData().get(new DataType(
+                        this.deviceType,
+                        sensorEvent.sensor.getType()
+                )))
+            )
+        );
     }
 
     @Override
@@ -157,11 +186,19 @@ public abstract class InferenceExecutor
 
     }
 
-    public InferencePipeline getmInferencePipeline() {
+    public DeviceType getDeviceType() {
+        return deviceType;
+    }
+
+    public void setDeviceType(DeviceType deviceType) {
+        this.deviceType = deviceType;
+    }
+
+    public InferencePipeline getInferencePipeline() {
         return mInferencePipeline;
     }
 
-    public void setmInferencePipeline(InferencePipeline mInferencePipeline) {
+    public void setInferencePipeline(InferencePipeline mInferencePipeline) {
         this.mInferencePipeline = mInferencePipeline;
     }
 
@@ -195,13 +232,5 @@ public abstract class InferenceExecutor
 
     public void setDuration(long duration) {
         this.duration = duration;
-    }
-
-    public List<List<Float>> getDataBuffer() {
-        return dataBuffer;
-    }
-
-    public void setDataBuffer(List<List<Float>> dataBuffer) {
-        this.dataBuffer = dataBuffer;
     }
 }

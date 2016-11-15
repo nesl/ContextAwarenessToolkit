@@ -4,6 +4,8 @@ import org.dmg.pmml.PMML;
 
 import java.util.List;
 
+import edu.ucla.nesl.toolkit.common.model.DataInstance;
+
 /**
  * Created by cgshen on 11/12/16.
  */
@@ -22,7 +24,7 @@ public class Classifier implements ModuleBase {
     }
 
     @Override
-    public float[] process(float[] data) {
+    public List<DataInstance> process(List<DataInstance> data) {
         return null;
     }
 
