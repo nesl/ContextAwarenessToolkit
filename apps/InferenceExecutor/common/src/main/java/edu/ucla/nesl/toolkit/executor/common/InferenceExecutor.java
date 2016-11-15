@@ -13,11 +13,8 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.util.Log;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import edu.ucla.nesl.toolkit.common.model.DataInstance;
-import edu.ucla.nesl.toolkit.common.model.DataVector;
+import edu.ucla.nesl.toolkit.common.model.SizedDataVector;
 import edu.ucla.nesl.toolkit.common.model.type.DataType;
 import edu.ucla.nesl.toolkit.common.model.type.DeviceType;
 import edu.ucla.nesl.toolkit.executor.common.ble.BLEDataMapClient;
@@ -26,6 +23,7 @@ import edu.ucla.nesl.toolkit.executor.common.module.DataInterface;
 import edu.ucla.nesl.toolkit.executor.common.module.Feature;
 import edu.ucla.nesl.toolkit.executor.common.module.InferencePipeline;
 import edu.ucla.nesl.toolkit.executor.common.module.Preprocess;
+import edu.ucla.nesl.toolkit.executor.common.util.SensorRate;
 
 /**
  * Created by cgshen on 11/13/16.
@@ -45,13 +43,15 @@ public abstract class InferenceExecutor
     private DataInterface sink;
 
     private SensorManager mSensorManager;
+    private SensorRate mSensorRate = SensorRate.getDefaultSensorRate();
+
     private BLEDataMapClient mBleClient;
 
     private static int resCount = 0;
     private static int numThreads;
     private static final Object lock = new Object();
 
-    private DataVector dataBuffer;
+    private SizedDataVector dataBuffer;
 
     public InferenceExecutor() {
         // By default, the entire inference runs on a single device
@@ -113,8 +113,11 @@ public abstract class InferenceExecutor
 
         // Setup data source (sensor or getting from radio)
         if (source == DataInterface.SENSOR) {
+            // Initialize a data buffer with size limit
+            dataBuffer = new SizedDataVector(
+                    mInferencePipeline.getMaxWindowSize() * mSensorRate.getFreq());
+
             // Start inference
-            dataBuffer = new DataVector();
             mSensorManager = ((SensorManager) context.getSystemService(Context.SENSOR_SERVICE));
             for (int sensorType : mInferencePipeline.getSensors()) {
                 // Initialize the data vector
@@ -126,7 +129,7 @@ public abstract class InferenceExecutor
                     mSensorManager.registerListener(
                             this,
                             currentSensor,
-                            SensorManager.SENSOR_DELAY_FASTEST);
+                            mSensorRate.getDelay());
                 } else {
                     Log.e(TAG, "Error: sensor not found " + currentSensor.getName());
                 }
@@ -232,5 +235,13 @@ public abstract class InferenceExecutor
 
     public void setDuration(long duration) {
         this.duration = duration;
+    }
+
+    public SensorRate getmSensorRate() {
+        return mSensorRate;
+    }
+
+    public void setmSensorRate(SensorRate mSensorRate) {
+        this.mSensorRate = mSensorRate;
     }
 }

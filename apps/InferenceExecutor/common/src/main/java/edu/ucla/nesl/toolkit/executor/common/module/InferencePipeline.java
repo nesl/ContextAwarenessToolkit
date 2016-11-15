@@ -80,4 +80,12 @@ public class InferencePipeline {
             this.sensors.add(sensorType);
         }
     }
+
+    public int getMaxWindowSize() {
+        return maxWindowSize;
+    }
+
+    public void setMaxWindowSize(int maxWindowSize) {
+        this.maxWindowSize = maxWindowSize;
+    }
 }
