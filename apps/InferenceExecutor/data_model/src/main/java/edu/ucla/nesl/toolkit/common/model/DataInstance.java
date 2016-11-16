@@ -4,6 +4,7 @@ import android.hardware.Sensor;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -16,6 +17,11 @@ public class DataInstance implements Serializable {
 
     public DataInstance() {
 
+    }
+
+    public DataInstance(DataInstance copyFrom) {
+        this.timestamp = copyFrom.getTimestamp();
+        this.values = Arrays.copyOf(copyFrom.getValues(), copyFrom.getValues().length);
     }
 
     public DataInstance(long timestamp, float[] values) {

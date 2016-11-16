@@ -81,6 +81,12 @@ public class DataVector implements Serializable {
         return 0;
     }
 
+    public void clearData() {
+        for (List list : data.values()) {
+            list.clear();
+        }
+    }
+
     public Map<DataType, List<DataInstance>> getData() {
         return this.data;
     }

@@ -13,6 +13,9 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.ucla.nesl.toolkit.common.model.DataInstance;
 import edu.ucla.nesl.toolkit.common.model.SizedDataVector;
 import edu.ucla.nesl.toolkit.common.model.type.DataType;
@@ -23,13 +26,14 @@ import edu.ucla.nesl.toolkit.executor.common.module.DataInterface;
 import edu.ucla.nesl.toolkit.executor.common.module.Feature;
 import edu.ucla.nesl.toolkit.executor.common.module.InferencePipeline;
 import edu.ucla.nesl.toolkit.executor.common.module.Preprocess;
+import edu.ucla.nesl.toolkit.executor.common.module.StringConstant;
 import edu.ucla.nesl.toolkit.executor.common.util.SensorRate;
 
 /**
  * Created by cgshen on 11/13/16.
  */
 
-public abstract class InferenceExecutor
+public class InferenceExecutor
         extends BroadcastReceiver
         implements SensorEventListener {
     private final static String TAG = "InfExecutor";
@@ -115,7 +119,7 @@ public abstract class InferenceExecutor
         if (source == DataInterface.SENSOR) {
             // Initialize a data buffer with size limit
             dataBuffer = new SizedDataVector(
-                    mInferencePipeline.getMaxWindowSize() * mSensorRate.getFreq());
+                    mInferencePipeline.getWindowSize() * mSensorRate.getFreq());
 
             // Start inference
             mSensorManager = ((SensorManager) context.getSystemService(Context.SENSOR_SERVICE));
@@ -129,7 +133,7 @@ public abstract class InferenceExecutor
                     mSensorManager.registerListener(
                             this,
                             currentSensor,
-                            mSensorRate.getDelay());
+                            mSensorRate.getSystemLevel());
                 } else {
                     Log.e(TAG, "Error: sensor not found " + currentSensor.getName());
                 }
@@ -165,23 +169,51 @@ public abstract class InferenceExecutor
         wl.release();
     }
 
+    private void executeInferencePipeline(List<DataInstance> data) {
+        List<DataInstance> process_data = null;
+        if (mInferencePipeline.getModules().containsKey(StringConstant.MOD_PREPROCESS)) {
+            process_data = mInferencePipeline.getModules().get(
+                    StringConstant.MOD_PREPROCESS).process(data);
+        }
+        if (mInferencePipeline.getModules().containsKey(StringConstant.MOD_FEATURE)) {
+            process_data = mInferencePipeline.getModules().get(
+                    StringConstant.MOD_FEATURE).process(data);
+        }
+        if (mInferencePipeline.getModules().containsKey(StringConstant.MOD_CLASSIFIER)) {
+            String label = ((Classifier) mInferencePipeline.getModules().get(
+                    StringConstant.MOD_CLASSIFIER)).getLabel(data);
+            if (sink == DataInterface.NOTIFICATION) {
+                Log.i(TAG, "Inference result: " + label);
+            }
+            else if (sink == DataInterface.BLE) {
+                // TODO: send data to BLE using mBleClient
+            }
+        }
+    }
+
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        // Perform the actual inference using mInferencePipeline
-        dataBuffer.addDataInstance(
-                this.deviceType,
-                sensorEvent.sensor.getType(),
-                new DataInstance(sensorEvent.timestamp, sensorEvent.values));
-        // TODO: enable DataVector to specify buffer size, sub-indexing, etc.
+        // Append data to buffer
+        if (dataBuffer.getDataLength(this.deviceType, sensorEvent.sensor.getType())
+                < mInferencePipeline.getWindowSize()) {
+            dataBuffer.addDataInstance(
+                    this.deviceType,
+                    sensorEvent.sensor.getType(),
+                    new DataInstance(sensorEvent.timestamp, sensorEvent.values));
+        }
 
-        new Classifier().process(
-            new Feature().process(
-                new Preprocess().process(dataBuffer.getData().get(new DataType(
-                        this.deviceType,
-                        sensorEvent.sensor.getType()
-                )))
-            )
-        );
+        // Perform inference
+        else {
+            List<DataInstance> data = dataBuffer.getDataInstance(
+                    this.deviceType,
+                    sensorEvent.sensor.getType());
+            List<DataInstance> dataCopy = new ArrayList<>();
+            for (DataInstance di : data) {
+                dataCopy.add(new DataInstance(di));
+            }
+            dataBuffer.clearData();
+            executeInferencePipeline(dataCopy);
+        }
     }
 
     @Override

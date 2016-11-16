@@ -1,10 +1,12 @@
 package edu.ucla.nesl.toolkit.executor.common.module;
 
-import android.hardware.Sensor;
+import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -12,21 +14,24 @@ import java.util.Set;
  */
 
 public class InferencePipeline {
+    private static final String TAG = "InfPipeline";
 
     private Set<Integer> sensors;
-    private List<ModuleBase> modules;
     private List<String> dataColumns;
-    private int maxWindowSize = 0;
+
+    private int windowSize;
+
+    private Map<String, ModuleBase> modules;
 
     public InferencePipeline() {
-        this.modules = new ArrayList<>();
+        this.modules = new HashMap<>();
         this.dataColumns = new ArrayList<>();
         this.sensors = new HashSet<>();
     }
 
     public InferencePipeline(
             Set<Integer> sensors,
-            List<ModuleBase> modules,
+            Map<String, ModuleBase> modules,
             List<String> dataColumns) {
         this.sensors = sensors;
         this.modules = modules;
@@ -34,28 +39,36 @@ public class InferencePipeline {
     }
 
     public void addModule(ModuleBase module) {
-        this.modules.add(module);
-
-        // Update the max buffer size
-        if (module instanceof Preprocess)
-            this.maxWindowSize = Math.max(
-                    this.maxWindowSize,
+        // Save module and update the max buffer size
+        if (module instanceof Preprocess) {
+            this.modules.put(StringConstant.MOD_PREPROCESS, module);
+            this.windowSize = Math.min(
+                    this.windowSize,
                     ((Preprocess) module).getWindowSize());
-        if (module instanceof Feature)
-            this.maxWindowSize = Math.max(
-                    this.maxWindowSize,
+        }
+        else if (module instanceof Feature) {
+            this.modules.put(StringConstant.MOD_FEATURE, module);
+            this.windowSize = Math.min(
+                    this.windowSize,
                     ((Feature) module).getWindowSize());
+        }
+        else if (module instanceof Classifier) {
+            this.modules.put(StringConstant.MOD_CLASSIFIER, module);
+        }
+        else {
+            Log.e(TAG, "Error: unsupported module type");
+        }
     }
 
     public void addDataColumn(String name) {
         this.dataColumns.add(name);
     }
 
-    public List<ModuleBase> getModules() {
+    public Map<String, ModuleBase> getModules() {
         return modules;
     }
 
-    public void setModules(List<ModuleBase> modules) {
+    public void setModules(Map<String, ModuleBase> modules) {
         this.modules = modules;
     }
 
@@ -81,11 +94,11 @@ public class InferencePipeline {
         }
     }
 
-    public int getMaxWindowSize() {
-        return maxWindowSize;
+    public int getWindowSize() {
+        return windowSize;
     }
 
-    public void setMaxWindowSize(int maxWindowSize) {
-        this.maxWindowSize = maxWindowSize;
+    public void setWindowSize(int windowSize) {
+        this.windowSize = windowSize;
     }
 }

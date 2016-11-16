@@ -24,7 +24,7 @@ public class InferenceManagerService extends Service {
         InferencePipeline pipeline = InferencePipelineBuilder.buildFromJSON(
                 getApplicationContext(),
                 INF_JSON);
-        new InferenceExecutor(pipeline, 10, 10);
+        new InferenceExecutor();
     }
 
     @Override
