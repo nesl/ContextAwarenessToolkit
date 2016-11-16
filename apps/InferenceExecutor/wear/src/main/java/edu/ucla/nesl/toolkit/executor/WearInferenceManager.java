@@ -1,12 +1,12 @@
 package edu.ucla.nesl.toolkit.executor;
 
+import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import edu.ucla.nesl.toolkit.executor.common.InferenceManagerService;
 
-public class WearInferenceManagerService extends InferenceManagerService {
-    public WearInferenceManagerService() {
+public class WearInferenceManager extends Service {
+    public WearInferenceManager() {
     }
 
     @Override

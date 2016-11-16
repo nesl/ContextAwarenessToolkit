@@ -3,6 +3,9 @@
     package="edu.ucla.nesl.toolkit.executor">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"
@@ -19,9 +22,14 @@
         </activity>
 
         <service
-            android:name=".MobileInferenceManagerService"
+            android:name=".MobileInferenceManager"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
+        <receiver android:name=".common.InferenceExecutor"
+            android:enabled="true"
+            android:exported="true" />
+
     </application>
 
 </manifest>

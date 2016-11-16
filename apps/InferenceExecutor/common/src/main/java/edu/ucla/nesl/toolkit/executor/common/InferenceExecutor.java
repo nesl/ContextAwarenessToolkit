@@ -18,14 +18,11 @@ import java.util.List;
 
 import edu.ucla.nesl.toolkit.common.model.DataInstance;
 import edu.ucla.nesl.toolkit.common.model.SizedDataVector;
-import edu.ucla.nesl.toolkit.common.model.type.DataType;
 import edu.ucla.nesl.toolkit.common.model.type.DeviceType;
 import edu.ucla.nesl.toolkit.executor.common.ble.BLEDataMapClient;
 import edu.ucla.nesl.toolkit.executor.common.module.Classifier;
 import edu.ucla.nesl.toolkit.executor.common.module.DataInterface;
-import edu.ucla.nesl.toolkit.executor.common.module.Feature;
 import edu.ucla.nesl.toolkit.executor.common.module.InferencePipeline;
-import edu.ucla.nesl.toolkit.executor.common.module.Preprocess;
 import edu.ucla.nesl.toolkit.executor.common.module.StringConstant;
 import edu.ucla.nesl.toolkit.executor.common.util.SensorRate;
 
@@ -51,7 +48,9 @@ public class InferenceExecutor
 
     private BLEDataMapClient mBleClient;
 
-    private static int resCount = 0;
+    private boolean running = false;
+    private int resCount = 0;
+
     private static int numThreads;
     private static final Object lock = new Object();
 
@@ -86,20 +85,22 @@ public class InferenceExecutor
         this.duration = duration;
     }
 
-    public void setInferenceAlarm(Context context) {
+    public void startInferenceAlarm(Context context) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent i = new Intent(context, InferenceExecutor.class);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, i, 0);
         am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), this.interval, pi);
-        Log.i(TAG, "Alarm set.");
+        running = true;
+        Log.i(TAG, "Inference alarm set.");
     }
 
-    public void cancelInferenceAlarm(Context context) {
+    public void stopInferenceAlarm(Context context) {
         Intent intent = new Intent(context, InferenceExecutor.class);
         PendingIntent sender = PendingIntent.getBroadcast(context, 0, intent, 0);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(sender);
-        Log.i(TAG, "Alarm cancelled.");
+        running = false;
+        Log.i(TAG, "Inference alarm cancelled.");
     }
 
     @Override
@@ -181,9 +182,10 @@ public class InferenceExecutor
         }
         if (mInferencePipeline.getModules().containsKey(StringConstant.MOD_CLASSIFIER)) {
             String label = ((Classifier) mInferencePipeline.getModules().get(
-                    StringConstant.MOD_CLASSIFIER)).getLabel(data);
+                    StringConstant.MOD_CLASSIFIER)).getLabel(process_data);
             if (sink == DataInterface.NOTIFICATION) {
                 Log.i(TAG, "Inference result: " + label);
+                resCount++;
             }
             else if (sink == DataInterface.BLE) {
                 // TODO: send data to BLE using mBleClient
@@ -275,5 +277,21 @@ public class InferenceExecutor
 
     public void setmSensorRate(SensorRate mSensorRate) {
         this.mSensorRate = mSensorRate;
+    }
+
+    public int getResCount() {
+        return resCount;
+    }
+
+    public void setResCount(int resCount) {
+        this.resCount = resCount;
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public void setRunning(boolean running) {
+        this.running = running;
     }
 }
