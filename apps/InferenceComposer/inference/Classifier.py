@@ -26,7 +26,6 @@ class Classifier(ModuleBase.ModuleBase):
             _use_top_features=False,
             _top_features=None,
             _test_index=None, 
-            _show_report=False,
             _cross_validation=False,
             _cv_fold=10):
         self.feature_mapper = _feature_mapper
@@ -35,11 +34,11 @@ class Classifier(ModuleBase.ModuleBase):
         self.use_top_features = _use_top_features
         self.top_features = _top_features
         self.test_index = _test_index
-        self.show_report = _show_report
         self.cross_validation = _cross_validation
         self.cv_fold = _cv_fold
 
         self.classifiers = {}
+        self.classifier_performance = {}
 
 
     def add_default_classifiers(self):
@@ -85,7 +84,7 @@ class Classifier(ModuleBase.ModuleBase):
         return X, y
 
 
-    def run_cross_validation(self, classifier, X, y, fold=10, show_report=False):
+    def run_cross_validation(self, classifier, X, y, fold=10):
         """
         Perform cross-validation and returns result
         """
@@ -120,10 +119,9 @@ class Classifier(ModuleBase.ModuleBase):
             count += 1
 
         # Print metrics from CV data
-        if show_report:
-            print('---Avg accuracy: ', avgacc / 10.0)
-            print('---Avg precision: ', avgprec / 10.0)
-            print('---Avg recall: ', avgrecl / 10.0)
+        print('---Avg accuracy: ', avgacc / 10.0)
+        print('---Avg precision: ', avgprec / 10.0)
+        print('---Avg recall: ', avgrecl / 10.0)
 
 
     def process(self, data):
@@ -149,17 +147,19 @@ class Classifier(ModuleBase.ModuleBase):
             classifier.fit(X_train, y_train)
 
             # Display training performance for this classifier
-            if self.show_report:
-                print('- Training performance: ')
-                show_accuracy(y_train, classifier.predict(X_train))
+            print('- Training performance: ')
+            acc, prec, recl = show_accuracy(y_train, classifier.predict(X_train))
 
-                # Run classifier on test data
-                if self.test_index is not None:
-                    print('- Testing performance: ')
-                    X_test, y_test = self.prepare_data(
-                        data.ix[self.test_index:, :]
-                    )
-                    show_accuracy(y_test, classifier.predict(X_test))
+            # Run classifier on test data
+            if self.test_index is not None:
+                print('- Testing performance: ')
+                X_test, y_test = self.prepare_data(
+                    data.ix[self.test_index:, :]
+                )
+                acc, prec, recl = show_accuracy(y_test, classifier.predict(X_test))
+
+            # Save the classifier performance
+            self.classifier_performance[name] = acc + prec + recl 
 
             # Perform cross validation
             if self.cross_validation:
@@ -167,8 +167,7 @@ class Classifier(ModuleBase.ModuleBase):
                     classifier,
                     X_train, 
                     y_train, 
-                    self.cv_fold, 
-                    self.show_report
+                    self.cv_fold
                 )
 
             # Dump the model to a file if necessary
@@ -181,31 +180,41 @@ class Classifier(ModuleBase.ModuleBase):
         # Return the list of trained classifiers
         return self.classifiers
 
-    def rank(self):
+    def best_classifier(self):
         """
-        Find the best classifiers possible
+        Find the classifier with the best performance
         """
-        raise NotImplementedError('Not implemented!')
+        print('Finding classifier with the best score...')
+        best_score = 0
+        best_name = None
+        best_classifier = None
+        for name in self.classifier_performance:
+            if self.classifier_performance[name] > best_score:
+                best_score = self.classifier_performance[name]
+                best_classifier = self.classifiers[name]
+                best_name = name
+        return best_name, best_classifier
 
     def export(self):
         """
         Export this module to json
-        TODO: when exporting, specify the best model
         """
-        result = []
-        for name, classifier in self.classifiers.items():
-            # Export models as PMML
-            pmml_path = export_model(
-                name, 
-                classifier, 
-                self.feature_mapper, 
-                self.model_path
-            )
-            current_classifier = {
-                ModuleBase.CLASSIFIER_NAME: name,
-                ModuleBase.CLASSIFIER_PMML: pmml_path
-            }
-            result.append(current_classifier)
+        # Get the best model
+        best_name, best_classifier = self.best_classifier()
+
+        # Export the best model as PMML
+        pmml_path = export_model(
+            best_name, 
+            best_classifier, 
+            self.feature_mapper, 
+            self.model_path
+        )
+
+        # Construct the json object
+        result = {
+            ModuleBase.CLASSIFIER_NAME: best_name,
+            ModuleBase.CLASSIFIER_PMML: pmml_path
+        }
         return json.dumps(result)
 
 

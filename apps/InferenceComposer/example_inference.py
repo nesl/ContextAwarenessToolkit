@@ -47,7 +47,7 @@ def compose_inference(filename=DATA_FILENAME):
 
 	# Pre-processing
 	pre_processor = Preprocess.Preprocess(
-		_window_size=5,
+		_window_size=1,
 		_data_columns=raw_data_columns,
 		_operators=[Preprocess.MOVING_AVG_SMOOTH]
 	)
@@ -60,7 +60,7 @@ def compose_inference(filename=DATA_FILENAME):
 		_data_columns=raw_data_columns,
 		_features=features
 	)
-	feature_vector = feature_calculator.process(processed_data[:50000])
+	feature_vector = feature_calculator.process(processed_data)
 	print(feature_vector.shape)
 
 	# Training with default classifiers
@@ -70,8 +70,7 @@ def compose_inference(filename=DATA_FILENAME):
 	    _model_path=MODEL_PATH,
 	    _use_top_features=False,
 	    _top_features=None,
-	    _test_index=600, 
-        _show_report=False,
+	    _test_index=None, 
         _cross_validation=False,
         _cv_fold=10
 	)
