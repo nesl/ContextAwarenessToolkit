@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PMML xmlns="http://www.dmg.org/PMML-4_3" version="4.3">
+	<Header>
+		<Application name="JPMML-SkLearn" version="1.1.3"/>
+		<Timestamp>2016-11-17T23:22:35Z</Timestamp>
+	</Header>
+	<DataDictionary>
+		<DataField name="mean" optype="continuous" dataType="float"/>
+		<DataField name="var" optype="continuous" dataType="float"/>
+		<DataField name="std" optype="continuous" dataType="float"/>
+		<DataField name="mag" optype="continuous" dataType="float"/>
+		<DataField name="kurt" optype="continuous" dataType="float"/>
+		<DataField name="qua2" optype="continuous" dataType="float"/>
+		<DataField name="qua3" optype="continuous" dataType="float"/>
+		<DataField name="fft1" optype="continuous" dataType="float"/>
+		<DataField name="fft2" optype="continuous" dataType="float"/>
+		<DataField name="fft3" optype="continuous" dataType="float"/>
+		<DataField name="label" optype="categorical" dataType="integer">
+			<Value value="0"/>
+			<Value value="1"/>
+		</DataField>
+	</DataDictionary>
+	<TreeModel functionName="classification" splitCharacteristic="binarySplit">
+		<MiningSchema>
+			<MiningField name="label" usageType="target"/>
+			<MiningField name="mean"/>
+			<MiningField name="var"/>
+			<MiningField name="std"/>
+			<MiningField name="mag"/>
+			<MiningField name="kurt"/>
+			<MiningField name="qua2"/>
+			<MiningField name="qua3"/>
+			<MiningField name="fft1"/>
+			<MiningField name="fft2"/>
+			<MiningField name="fft3"/>
+		</MiningSchema>
+		<Output>
+			<OutputField name="probability_0" optype="continuous" dataType="double" feature="probability" value="0"/>
+			<OutputField name="probability_1" optype="continuous" dataType="double" feature="probability" value="1"/>
+		</Output>
+		<Node id="1">
+			<True/>
+			<Node id="2">
+				<SimplePredicate field="qua3" operator="lessOrEqual" value="3.8148112"/>
+				<Node id="3">
+					<SimplePredicate field="fft3" operator="lessOrEqual" value="1028.7306"/>
+					<Node id="4">
+						<SimplePredicate field="mean" operator="lessOrEqual" value="-5.35289"/>
+						<Node id="5" score="0" recordCount="1.0">
+							<SimplePredicate field="mag" operator="lessOrEqual" value="10.270561"/>
+							<ScoreDistribution value="0" recordCount="1.0"/>
+							<ScoreDistribution value="1" recordCount="0.0"/>
+						</Node>
+						<Node id="6" score="1" recordCount="5.0">
+							<SimplePredicate field="mag" operator="greaterThan" value="10.270561"/>
+							<ScoreDistribution value="0" recordCount="0.0"/>
+							<ScoreDistribution value="1" recordCount="5.0"/>
+						</Node>
+					</Node>
+					<Node id="7">
+						<SimplePredicate field="mean" operator="greaterThan" value="-5.35289"/>
+						<Node id="8">
+							<SimplePredicate field="qua3" operator="lessOrEqual" value="2.9737482"/>
+							<Node id="9" score="1" recordCount="1.0">
+								<SimplePredicate field="qua2" operator="lessOrEqual" value="-5.6710157"/>
+								<ScoreDistribution value="0" recordCount="0.0"/>
+								<ScoreDistribution value="1" recordCount="1.0"/>
+							</Node>
+							<Node id="10">
+								<SimplePredicate field="qua2" operator="greaterThan" value="-5.6710157"/>
+								<Node id="11">
+									<SimplePredicate field="qua3" operator="lessOrEqual" value="-4.5052395"/>
+									<Node id="12" score="0" recordCount="4.0">
+										<SimplePredicate field="qua2" operator="lessOrEqual" value="-5.049321"/>
+										<ScoreDistribution value="0" recordCount="4.0"/>
+										<ScoreDistribution value="1" recordCount="0.0"/>
+									</Node>
+									<Node id="13" score="1" recordCount="2.0">
+										<SimplePredicate field="qua2" operator="greaterThan" value="-5.049321"/>
+										<ScoreDistribution value="0" recordCount="0.0"/>
+										<ScoreDistribution value="1" recordCount="2.0"/>
+									</Node>
+								</Node>
+								<Node id="14">
+									<SimplePredicate field="qua3" operator="greaterThan" value="-4.5052395"/>
+									<Node id="15" score="0" recordCount="270.0">
+										<SimplePredicate field="fft3" operator="lessOrEqual" value="836.73035"/>
+										<ScoreDistribution value="0" recordCount="270.0"/>
+										<ScoreDistribution value="1" recordCount="0.0"/>
+									</Node>
+									<Node id="16">
+										<SimplePredicate field="fft3" operator="greaterThan" value="836.73035"/>
+										<Node id="17" score="0" recordCount="2.0">
+											<SimplePredicate field="qua2" operator="lessOrEqual" value="-1.2078248"/>
+											<ScoreDistribution value="0" recordCount="2.0"/>
+											<ScoreDistribution value="1" recordCount="0.0"/>
+										</Node>
+										<Node id="18" score="1" recordCount="1.0">
+											<SimplePredicate field="qua2" operator="greaterThan" value="-1.2078248"/>
+											<ScoreDistribution value="0" recordCount="0.0"/>
+											<ScoreDistribution value="1" recordCount="1.0"/>
+										</Node>
+									</Node>
+								</Node>
+							</Node>
+						</Node>
+						<Node id="19">
+							<SimplePredicate field="qua3" operator="greaterThan" value="2.9737482"/>
+							<Node id="20">
+								<SimplePredicate field="mag" operator="lessOrEqual" value="9.6108055"/>
+								<Node id="21" score="0" recordCount="2.0">
+									<SimplePredicate field="qua3" operator="lessOrEqual" value="3.4404182"/>
+									<ScoreDistribution value="0" recordCount="2.0"/>
+									<ScoreDistribution value="1" recordCount="0.0"/>
+								</Node>
+								<Node id="22" score="1" recordCount="5.0">
+									<SimplePredicate field="qua3" operator="greaterThan" value="3.4404182"/>
+									<ScoreDistribution value="0" recordCount="0.0"/>
+									<ScoreDistribution value="1" recordCount="5.0"/>
+								</Node>
+							</Node>
+							<Node id="23">
+								<SimplePredicate field="mag" operator="greaterThan" value="9.6108055"/>
+								<Node id="24">
+									<SimplePredicate field="qua2" operator="lessOrEqual" value="2.6671906"/>
+									<Node id="25" score="0" recordCount="3.0">
+										<SimplePredicate field="mean" operator="lessOrEqual" value="2.5174572"/>
+										<ScoreDistribution value="0" recordCount="3.0"/>
+										<ScoreDistribution value="1" recordCount="0.0"/>
+									</Node>
+									<Node id="26" score="1" recordCount="3.0">
+										<SimplePredicate field="mean" operator="greaterThan" value="2.5174572"/>
+										<ScoreDistribution value="0" recordCount="0.0"/>
+										<ScoreDistribution value="1" recordCount="3.0"/>
+									</Node>
+								</Node>
+								<Node id="27" score="0" recordCount="21.0">
+									<SimplePredicate field="qua2" operator="greaterThan" value="2.6671906"/>
+									<ScoreDistribution value="0" recordCount="21.0"/>
+									<ScoreDistribution value="1" recordCount="0.0"/>
+								</Node>
+							</Node>
+						</Node>
+					</Node>
+				</Node>
+				<Node id="28">
+					<SimplePredicate field="fft3" operator="greaterThan" value="1028.7306"/>
+					<Node id="29" score="1" recordCount="10.0">
+						<SimplePredicate field="kurt" operator="lessOrEqual" value="-0.3416961"/>
+						<ScoreDistribution value="0" recordCount="0.0"/>
+						<ScoreDistribution value="1" recordCount="10.0"/>
+					</Node>
+					<Node id="30">
+						<SimplePredicate field="kurt" operator="greaterThan" value="-0.3416961"/>
+						<Node id="31" score="1" recordCount="1.0">
+							<SimplePredicate field="qua2" operator="lessOrEqual" value="-4.9070663"/>
+							<ScoreDistribution value="0" recordCount="0.0"/>
+							<ScoreDistribution value="1" recordCount="1.0"/>
+						</Node>
+						<Node id="32" score="0" recordCount="5.0">
+							<SimplePredicate field="qua2" operator="greaterThan" value="-4.9070663"/>
+							<ScoreDistribution value="0" recordCount="5.0"/>
+							<ScoreDistribution value="1" recordCount="0.0"/>
+						</Node>
+					</Node>
+				</Node>
+			</Node>
+			<Node id="33">
+				<SimplePredicate field="qua3" operator="greaterThan" value="3.8148112"/>
+				<Node id="34">
+					<SimplePredicate field="qua2" operator="lessOrEqual" value="3.1899245"/>
+					<Node id="35" score="1" recordCount="2.0">
+						<SimplePredicate field="qua3" operator="lessOrEqual" value="4.1755376"/>
+						<ScoreDistribution value="0" recordCount="0.0"/>
+						<ScoreDistribution value="1" recordCount="2.0"/>
+					</Node>
+					<Node id="36" score="0" recordCount="8.0">
+						<SimplePredicate field="qua3" operator="greaterThan" value="4.1755376"/>
+						<ScoreDistribution value="0" recordCount="8.0"/>
+						<ScoreDistribution value="1" recordCount="0.0"/>
+					</Node>
+				</Node>
+				<Node id="37">
+					<SimplePredicate field="qua2" operator="greaterThan" value="3.1899245"/>
+					<Node id="38">
+						<SimplePredicate field="var" operator="lessOrEqual" value="0.1499432"/>
+						<Node id="39">
+							<SimplePredicate field="qua3" operator="lessOrEqual" value="4.743063"/>
+							<Node id="40">
+								<SimplePredicate field="fft2" operator="lessOrEqual" value="0.77124"/>
+								<Node id="41" score="0" recordCount="2.0">
+									<SimplePredicate field="fft2" operator="lessOrEqual" value="0.15770212"/>
+									<ScoreDistribution value="0" recordCount="2.0"/>
+									<ScoreDistribution value="1" recordCount="0.0"/>
+								</Node>
+								<Node id="42" score="1" recordCount="3.0">
+									<SimplePredicate field="fft2" operator="greaterThan" value="0.15770212"/>
+									<ScoreDistribution value="0" recordCount="0.0"/>
+									<ScoreDistribution value="1" recordCount="3.0"/>
+								</Node>
+							</Node>
+							<Node id="43" score="0" recordCount="11.0">
+								<SimplePredicate field="fft2" operator="greaterThan" value="0.77124"/>
+								<ScoreDistribution value="0" recordCount="11.0"/>
+								<ScoreDistribution value="1" recordCount="0.0"/>
+							</Node>
+						</Node>
+						<Node id="44" score="1" recordCount="6.0">
+							<SimplePredicate field="qua3" operator="greaterThan" value="4.743063"/>
+							<ScoreDistribution value="0" recordCount="0.0"/>
+							<ScoreDistribution value="1" recordCount="6.0"/>
+						</Node>
+					</Node>
+					<Node id="45">
+						<SimplePredicate field="var" operator="greaterThan" value="0.1499432"/>
+						<Node id="46">
+							<SimplePredicate field="kurt" operator="lessOrEqual" value="11.493706"/>
+							<Node id="47">
+								<SimplePredicate field="fft3" operator="lessOrEqual" value="190.65216"/>
+								<Node id="48">
+									<SimplePredicate field="var" operator="lessOrEqual" value="0.6093588"/>
+									<Node id="49" score="0" recordCount="5.0">
+										<SimplePredicate field="kurt" operator="lessOrEqual" value="-0.4882633"/>
+										<ScoreDistribution value="0" recordCount="5.0"/>
+										<ScoreDistribution value="1" recordCount="0.0"/>
+									</Node>
+									<Node id="50">
+										<SimplePredicate field="kurt" operator="greaterThan" value="-0.4882633"/>
+										<Node id="51" score="1" recordCount="43.0">
+											<SimplePredicate field="var" operator="lessOrEqual" value="0.5920532"/>
+											<ScoreDistribution value="0" recordCount="5.0"/>
+											<ScoreDistribution value="1" recordCount="38.0"/>
+										</Node>
+										<Node id="52" score="0" recordCount="3.0">
+											<SimplePredicate field="var" operator="greaterThan" value="0.5920532"/>
+											<ScoreDistribution value="0" recordCount="3.0"/>
+											<ScoreDistribution value="1" recordCount="0.0"/>
+										</Node>
+									</Node>
+								</Node>
+								<Node id="53">
+									<SimplePredicate field="var" operator="greaterThan" value="0.6093588"/>
+									<Node id="54">
+										<SimplePredicate field="fft3" operator="lessOrEqual" value="1.6277336"/>
+										<Node id="55" score="0" recordCount="2.0">
+											<SimplePredicate field="mag" operator="lessOrEqual" value="9.979039"/>
+											<ScoreDistribution value="0" recordCount="2.0"/>
+											<ScoreDistribution value="1" recordCount="0.0"/>
+										</Node>
+										<Node id="56" score="1" recordCount="1.0">
+											<SimplePredicate field="mag" operator="greaterThan" value="9.979039"/>
+											<ScoreDistribution value="0" recordCount="0.0"/>
+											<ScoreDistribution value="1" recordCount="1.0"/>
+										</Node>
+									</Node>
+									<Node id="57">
+										<SimplePredicate field="fft3" operator="greaterThan" value="1.6277336"/>
+										<Node id="58" score="1" recordCount="126.0">
+											<SimplePredicate field="mean" operator="lessOrEqual" value="5.2574654"/>
+											<ScoreDistribution value="0" recordCount="7.0"/>
+											<ScoreDistribution value="1" recordCount="119.0"/>
+										</Node>
+										<Node id="59" score="1" recordCount="11.0">
+											<SimplePredicate field="mean" operator="greaterThan" value="5.2574654"/>
+											<ScoreDistribution value="0" recordCount="3.0"/>
+											<ScoreDistribution value="1" recordCount="8.0"/>
+										</Node>
+									</Node>
+								</Node>
+							</Node>
+							<Node id="60">
+								<SimplePredicate field="fft3" operator="greaterThan" value="190.65216"/>
+								<Node id="61">
+									<SimplePredicate field="fft3" operator="lessOrEqual" value="235.37247"/>
+									<Node id="62" score="0" recordCount="4.0">
+										<SimplePredicate field="mag" operator="lessOrEqual" value="10.772728"/>
+										<ScoreDistribution value="0" recordCount="4.0"/>
+										<ScoreDistribution value="1" recordCount="0.0"/>
+									</Node>
+									<Node id="63" score="1" recordCount="1.0">
+										<SimplePredicate field="mag" operator="greaterThan" value="10.772728"/>
+										<ScoreDistribution value="0" recordCount="0.0"/>
+										<ScoreDistribution value="1" recordCount="1.0"/>
+									</Node>
+								</Node>
+								<Node id="64">
+									<SimplePredicate field="fft3" operator="greaterThan" value="235.37247"/>
+									<Node id="65">
+										<SimplePredicate field="fft2" operator="lessOrEqual" value="603.7155"/>
+										<Node id="66" score="0" recordCount="1.0">
+											<SimplePredicate field="std" operator="lessOrEqual" value="1.1131728"/>
+											<ScoreDistribution value="0" recordCount="1.0"/>
+											<ScoreDistribution value="1" recordCount="0.0"/>
+										</Node>
+										<Node id="67" score="1" recordCount="21.0">
+											<SimplePredicate field="std" operator="greaterThan" value="1.1131728"/>
+											<ScoreDistribution value="0" recordCount="2.0"/>
+											<ScoreDistribution value="1" recordCount="19.0"/>
+										</Node>
+									</Node>
+									<Node id="68">
+										<SimplePredicate field="fft2" operator="greaterThan" value="603.7155"/>
+										<Node id="69" score="0" recordCount="4.0">
+											<SimplePredicate field="fft2" operator="lessOrEqual" value="1152.1888"/>
+											<ScoreDistribution value="0" recordCount="4.0"/>
+											<ScoreDistribution value="1" recordCount="0.0"/>
+										</Node>
+										<Node id="70" score="1" recordCount="4.0">
+											<SimplePredicate field="fft2" operator="greaterThan" value="1152.1888"/>
+											<ScoreDistribution value="0" recordCount="1.0"/>
+											<ScoreDistribution value="1" recordCount="3.0"/>
+										</Node>
+									</Node>
+								</Node>
+							</Node>
+						</Node>
+						<Node id="71">
+							<SimplePredicate field="kurt" operator="greaterThan" value="11.493706"/>
+							<Node id="72" score="1" recordCount="2.0">
+								<SimplePredicate field="fft1" operator="lessOrEqual" value="19.205584"/>
+								<ScoreDistribution value="0" recordCount="0.0"/>
+								<ScoreDistribution value="1" recordCount="2.0"/>
+							</Node>
+							<Node id="73" score="0" recordCount="5.0">
+								<SimplePredicate field="fft1" operator="greaterThan" value="19.205584"/>
+								<ScoreDistribution value="0" recordCount="5.0"/>
+								<ScoreDistribution value="1" recordCount="0.0"/>
+							</Node>
+						</Node>
+					</Node>
+				</Node>
+			</Node>
+		</Node>
+	</TreeModel>
+</PMML>

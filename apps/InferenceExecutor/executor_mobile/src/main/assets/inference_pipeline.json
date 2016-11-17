@@ -1,46 +1,76 @@
 {
-    "mod_classifier": [
-        {
-            "classifier_name": "svm_linear",
-            "classifier_pmml": "external_data/inference_composer/model/svm_linear.pmml"
+    "android_phone": {
+        "mod_classifier": {
+            "classifier_name": "rf_64x6",
+            "classifier_pmml": "external_data/inference_composer/model/rf_64x6.pmml"
+        },
+        "mod_feature": {
+            "data_column": [
+                "accx",
+                "accy",
+                "accz"
+            ],
+            "feature": [
+                "mean",
+                "std",
+                "mad",
+                "rms",
+                "range",
+                "skew",
+                "qua1",
+                "fft3",
+                "fft4",
+                "fft5"
+            ],
+            "window_size": 1
+        },
+        "mod_preprocess": {
+            "data_column": [
+                "accx",
+                "accy",
+                "accz"
+            ],
+            "operator": [
+                "moving_avg_smooth"
+            ],
+            "window_size": 1
         }
-    ],
-    "mod_feature": {
-        "data_column": [
-            "accx",
-            "accy",
-            "accz"
-        ],
-        "feature": [
-            "mean",
-            "std",
-            "var",
-            "mad",
-            "rms",
-            "mag",
-            "range",
-            "skew",
-            "kurt",
-            "qua1",
-            "qua2",
-            "qua3",
-            "fft1",
-            "fft2",
-            "fft3",
-            "fft4",
-            "fft5"
-        ],
-        "window_size": 1
     },
-    "mod_preprocess": {
-        "data_column": [
-            "accx",
-            "accy",
-            "accz"
-        ],
-        "operator": [
-            "moving_avg_smooth"
-        ],
-        "window_size": 1
+    "android_wear": {
+        "mod_classifier": {
+            "classifier_name": "dt_depth8",
+            "classifier_pmml": "external_data/inference_composer/model/dt_depth8.pmml"
+        },
+        "mod_feature": {
+            "data_column": [
+                "accx",
+                "accy",
+                "accz"
+            ],
+            "feature": [
+                "mean",
+                "var",
+                "std",
+                "mag",
+                "kurt",
+                "qua2",
+                "qua3",
+                "fft1",
+                "fft2",
+                "fft3"
+            ],
+            "window_size": 1
+        },
+        "mod_preprocess": {
+            "data_column": [
+                "accx",
+                "accy",
+                "accz"
+            ],
+            "operator": [
+                "moving_avg_smooth"
+            ],
+            "window_size": 1
+        }
     }
 }

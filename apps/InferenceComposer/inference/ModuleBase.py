@@ -15,6 +15,10 @@ CLASSIFIER_PMML = 'classifier_pmml'
 TIMESTAMP = 'time'
 LABEL = 'label'
 
+ANDROID_PHONE = 'android_phone'
+ANDROID_WEAR = 'android_wear'
+ANDROID_BOTH = 'android_phone_wear'
+
 ACCX = 'accx'
 ACCY = 'accy'
 ACCZ = 'accz'

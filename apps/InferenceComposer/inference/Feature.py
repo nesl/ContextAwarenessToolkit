@@ -30,8 +30,8 @@ class Feature(ModuleBase.ModuleBase):
 
     def __init__(self, _window_size, _data_columns, _features):
         self.window_size = _window_size
-        self.data_columns = _data_columns
-        self.features = _features
+        self.data_columns = list(_data_columns)
+        self.features = list(_features)
 
     def energy(self, column):
         """

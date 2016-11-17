@@ -11,9 +11,9 @@ class Preprocess(ModuleBase.ModuleBase):
     module_type = ModuleBase.MOD_PREPROCESS
 
     def __init__(self, _operators, _window_size, _data_columns):
-        self.operators = _operators
+        self.operators = list(_operators)
         self.window_size = _window_size
-        self.data_columns = _data_columns
+        self.data_columns = list(_data_columns)
 
     def moving_average(self, interval, window_size):
         """
@@ -27,6 +27,10 @@ class Preprocess(ModuleBase.ModuleBase):
         Smooth a data frame
         """
         data.columns = self.data_columns
+        if ModuleBase.TIMESTAMP in self.data_columns:
+            self.data_columns.remove(ModuleBase.TIMESTAMP)
+        if ModuleBase.LABEL in self.data_columns:
+            self.data_columns.remove(ModuleBase.LABEL)
            
         # Smooth data using 5s moving average
         x = data.ix[:,1]
