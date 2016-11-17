@@ -4,7 +4,7 @@ android {
     compileSdkVersion 24
     buildToolsVersion "24.0.0"
     defaultConfig {
-        applicationId "edu.ucla.nesl.toolkit"
+        applicationId "edu.ucla.nesl.toolkit.executor"
         minSdkVersion 23
         targetSdkVersion 24
         versionCode 1
@@ -19,9 +19,9 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.google.android.support:wearable:2.0.0-alpha3'
-    compile 'com.google.android.gms:play-services-wearable:9.6.1'
+    compile 'com.google.android.gms:play-services-wearable:9.8.0'
     provided 'com.google.android.wearable:wearable:2.0.0-alpha3'
-    compile project(':common_data')
+    compile project(':common_inference')
 }

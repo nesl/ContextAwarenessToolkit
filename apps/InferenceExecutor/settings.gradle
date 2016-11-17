@@ -1,1 +1,1 @@
-include ':mobile', ':wear', ':common', ':data_model'
+include ':executor_mobile', ':executor_wear', ':common_inference', ':common_data'
