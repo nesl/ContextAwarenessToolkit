@@ -1,5 +1,7 @@
 package edu.ucla.nesl.toolkit.common.model;
 
+import android.util.Log;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -18,6 +20,8 @@ import edu.ucla.nesl.toolkit.common.model.type.DeviceType;
  */
 
 public class DataVector implements Serializable {
+    private static final String TAG = "DataVector";
+
     // TODO: deal with possible inconsistency between timestamps in DataVector and DataInstance
     private long timestamp;
     protected Map<DataType, List<DataInstance>> data;
@@ -32,29 +36,31 @@ public class DataVector implements Serializable {
     }
 
     public void addDataType(DeviceType deviceType, int sensorType) {
-        DataType dataType = new DataType(deviceType, sensorType);
+        DataType dataType = DataType.getInstance(deviceType, sensorType);
         if (!data.containsKey(dataType)) {
             data.put(dataType, new ArrayList<DataInstance>());
         }
     }
 
     public void removeDataType(DeviceType deviceType, int sensorType) {
-        DataType dataType = new DataType(deviceType, sensorType);
+        DataType dataType = DataType.getInstance(deviceType, sensorType);
         if (data.containsKey(dataType)) {
             data.remove(dataType);
         }
     }
 
     public void addDataInstance(DeviceType deviceType, int sensorType, DataInstance dataInstance) {
-        // TODO: this will create a lot of garbage, needs better indexing
-        DataType dataType = new DataType(deviceType, sensorType);
+        DataType dataType = DataType.getInstance(deviceType, sensorType);
         if (data.containsKey(dataType)) {
             data.get(dataType).add(dataInstance);
+        }
+        else {
+            Log.e(TAG, "Error: data type does not exist.");
         }
     }
 
     public List<DataInstance> getDataInstance(DeviceType deviceType, int sensorType) {
-        DataType dataType = new DataType(deviceType, sensorType);
+        DataType dataType = DataType.getInstance(deviceType, sensorType);
         if (data.containsKey(dataType)) {
             return data.get(dataType);
         }
@@ -65,7 +71,7 @@ public class DataVector implements Serializable {
             DeviceType deviceType,
             int sensorType,
             int size) {
-        DataType dataType = new DataType(deviceType, sensorType);
+        DataType dataType = DataType.getInstance(deviceType, sensorType);
         if (data.containsKey(dataType)) {
             int length = data.get(dataType).size();
             return data.get(dataType).subList(length - size - 1, length - 1);
@@ -74,7 +80,7 @@ public class DataVector implements Serializable {
     }
 
     public int getDataLength(DeviceType deviceType, int sensorType) {
-        DataType dataType = new DataType(deviceType, sensorType);
+        DataType dataType = DataType.getInstance(deviceType, sensorType);
         if (data.containsKey(dataType)) {
             return data.get(dataType).size();
         }

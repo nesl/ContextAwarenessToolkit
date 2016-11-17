@@ -35,16 +35,16 @@ public class InferenceExecutor
         implements SensorEventListener {
     private final static String TAG = "InfExecutor";
 
-    private InferencePipeline mInferencePipeline;
-    private long interval;
-    private long duration;
+    private static InferencePipeline mInferencePipeline;
+    private static long interval;
+    private static long duration;
 
-    private DeviceType deviceType;
-    private DataInterface source;
-    private DataInterface sink;
+    private static DeviceType deviceType;
+    private static DataInterface source = DataInterface.SENSOR;
+    private static DataInterface sink = DataInterface.NOTIFICATION;
 
-    private SensorManager mSensorManager;
-    private SensorRate mSensorRate = SensorRate.getDefaultSensorRate();
+    private static SensorManager mSensorManager;
+    private static SensorRate mSensorRate = SensorRate.getDefaultSensorRate();
 
     private BLEDataMapClient mBleClient;
 
@@ -54,42 +54,13 @@ public class InferenceExecutor
     private static int numThreads;
     private static final Object lock = new Object();
 
-    private SizedDataVector dataBuffer;
-
-    public InferenceExecutor() {
-        // By default, the entire inference runs on a single device
-        this.source = DataInterface.SENSOR;
-        this.sink = DataInterface.NOTIFICATION;
-    }
-
-    public InferenceExecutor(DeviceType deviceType, long interval, long duration) {
-        this.deviceType = deviceType;
-        this.interval = interval;
-        this.duration = duration;
-        this.source = DataInterface.SENSOR;
-        this.sink = DataInterface.NOTIFICATION;
-    }
-
-    public InferenceExecutor(
-            DeviceType deviceType,
-            InferencePipeline mInferencePipeline,
-            DataInterface source,
-            DataInterface sink,
-            long interval,
-            long duration) {
-        this.deviceType = deviceType;
-        this.mInferencePipeline = mInferencePipeline;
-        this.source = source;
-        this.sink = sink;
-        this.interval = interval;
-        this.duration = duration;
-    }
+    private static SizedDataVector dataBuffer;
 
     public void startInferenceAlarm(Context context) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent i = new Intent(context, InferenceExecutor.class);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, i, 0);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), this.interval, pi);
+        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pi);
         running = true;
         Log.i(TAG, "Inference alarm set.");
     }
@@ -113,8 +84,11 @@ public class InferenceExecutor
         Log.i(TAG, "InferenceExecutor received alarm.");
 
         // Check if we have a valid inference pipeline
-        if (mInferencePipeline == null)
+        if (mInferencePipeline == null) {
             Log.e(TAG, "Error: no inference specified");
+            wl.release();
+            return;
+        }
 
         // Setup data source (sensor or getting from radio)
         if (source == DataInterface.SENSOR) {
@@ -126,7 +100,7 @@ public class InferenceExecutor
             mSensorManager = ((SensorManager) context.getSystemService(Context.SENSOR_SERVICE));
             for (int sensorType : mInferencePipeline.getSensors()) {
                 // Initialize the data vector
-                dataBuffer.addDataType(this.deviceType, sensorType);
+                dataBuffer.addDataType(deviceType, sensorType);
 
                 // Register the listener for the requested sensor type
                 Sensor currentSensor = mSensorManager.getDefaultSensor(sensorType);
@@ -136,7 +110,7 @@ public class InferenceExecutor
                             currentSensor,
                             mSensorRate.getSystemLevel());
                 } else {
-                    Log.e(TAG, "Error: sensor not found " + currentSensor.getName());
+                    Log.e(TAG, "Error: sensor not found " + sensorType);
                 }
             }
 
@@ -148,6 +122,7 @@ public class InferenceExecutor
                         public void run() {
                             mSensorManager.unregisterListener(InferenceExecutor.this);
                             mSensorManager = null;
+                            dataBuffer = null;
                             Log.i(TAG, "Inference execution finished.");
                         }
                     },
@@ -195,19 +170,18 @@ public class InferenceExecutor
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        // Append data to buffer
-        if (dataBuffer.getDataLength(this.deviceType, sensorEvent.sensor.getType())
-                < mInferencePipeline.getWindowSize()) {
+        if (dataBuffer.getDataLength(deviceType, sensorEvent.sensor.getType())
+                < dataBuffer.getSizeLimit()) {
+            // Append data to buffer
             dataBuffer.addDataInstance(
-                    this.deviceType,
+                    deviceType,
                     sensorEvent.sensor.getType(),
                     new DataInstance(sensorEvent.timestamp, sensorEvent.values));
         }
-
-        // Perform inference
         else {
+            // Perform inference
             List<DataInstance> data = dataBuffer.getDataInstance(
-                    this.deviceType,
+                    deviceType,
                     sensorEvent.sensor.getType());
             List<DataInstance> dataCopy = new ArrayList<>();
             for (DataInstance di : data) {
@@ -228,7 +202,7 @@ public class InferenceExecutor
     }
 
     public void setDeviceType(DeviceType deviceType) {
-        this.deviceType = deviceType;
+        InferenceExecutor.deviceType = deviceType;
     }
 
     public InferencePipeline getInferencePipeline() {
@@ -236,7 +210,7 @@ public class InferenceExecutor
     }
 
     public void setInferencePipeline(InferencePipeline mInferencePipeline) {
-        this.mInferencePipeline = mInferencePipeline;
+        InferenceExecutor.mInferencePipeline = mInferencePipeline;
     }
 
     public DataInterface getSink() {
@@ -244,7 +218,7 @@ public class InferenceExecutor
     }
 
     public void setSink(DataInterface sink) {
-        this.sink = sink;
+        InferenceExecutor.sink = sink;
     }
 
     public DataInterface getSource() {
@@ -252,7 +226,7 @@ public class InferenceExecutor
     }
 
     public void setSource(DataInterface source) {
-        this.source = source;
+        InferenceExecutor.source = source;
     }
 
     public long getInterval() {
@@ -260,7 +234,7 @@ public class InferenceExecutor
     }
 
     public void setInterval(long interval) {
-        this.interval = interval;
+        InferenceExecutor.interval = interval;
     }
 
     public long getDuration() {
@@ -268,7 +242,7 @@ public class InferenceExecutor
     }
 
     public void setDuration(long duration) {
-        this.duration = duration;
+        InferenceExecutor.duration = duration;
     }
 
     public SensorRate getmSensorRate() {
@@ -276,7 +250,7 @@ public class InferenceExecutor
     }
 
     public void setmSensorRate(SensorRate mSensorRate) {
-        this.mSensorRate = mSensorRate;
+        InferenceExecutor.mSensorRate = mSensorRate;
     }
 
     public int getResCount() {

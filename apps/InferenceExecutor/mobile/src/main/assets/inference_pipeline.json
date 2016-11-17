@@ -1,22 +1,6 @@
 {
     "mod_classifier": [
         {
-            "classifier_name": "svm_rbf",
-            "classifier_pmml": "external_data/inference_composer/model/svm_rbf.pmml"
-        },
-        {
-            "classifier_name": "rf_64x6",
-            "classifier_pmml": "external_data/inference_composer/model/rf_64x6.pmml"
-        },
-        {
-            "classifier_name": "dt_depth8",
-            "classifier_pmml": "external_data/inference_composer/model/dt_depth8.pmml"
-        },
-        {
-            "classifier_name": "dt_depth5",
-            "classifier_pmml": "external_data/inference_composer/model/dt_depth5.pmml"
-        },
-        {
             "classifier_name": "svm_linear",
             "classifier_pmml": "external_data/inference_composer/model/svm_linear.pmml"
         }
@@ -57,6 +41,6 @@
         "operator": [
             "moving_avg_smooth"
         ],
-        "window_size": 5
+        "window_size": 1
     }
 }

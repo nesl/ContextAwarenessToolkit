@@ -27,6 +27,7 @@ public class InferencePipeline {
         this.modules = new HashMap<>();
         this.dataColumns = new ArrayList<>();
         this.sensors = new HashSet<>();
+        this.windowSize = Integer.MAX_VALUE;
     }
 
     public InferencePipeline(
@@ -36,21 +37,25 @@ public class InferencePipeline {
         this.sensors = sensors;
         this.modules = modules;
         this.dataColumns = dataColumns;
+        this.windowSize = Integer.MAX_VALUE;
     }
 
     public void addModule(ModuleBase module) {
         // Save module and update the max buffer size
         if (module instanceof Preprocess) {
             this.modules.put(StringConstant.MOD_PREPROCESS, module);
-            this.windowSize = Math.min(
-                    this.windowSize,
-                    ((Preprocess) module).getWindowSize());
+            int newSize = ((Preprocess) module).getWindowSize();
+            if (newSize > 0) {
+                this.windowSize = Math.min(this.windowSize, newSize);
+            }
         }
         else if (module instanceof Feature) {
             this.modules.put(StringConstant.MOD_FEATURE, module);
-            this.windowSize = Math.min(
-                    this.windowSize,
-                    ((Feature) module).getWindowSize());
+            int newSize = ((Feature) module).getWindowSize();
+            if (newSize > 0) {
+                this.windowSize = Math.min(this.windowSize, newSize);
+            }
+
         }
         else if (module instanceof Classifier) {
             this.modules.put(StringConstant.MOD_CLASSIFIER, module);

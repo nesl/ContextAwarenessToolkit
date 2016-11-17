@@ -20,7 +20,7 @@ public class SizedDataVector extends DataVector {
 
     @Override
     public void addDataType(DeviceType deviceType, int sensorType) {
-        DataType dataType = new DataType(deviceType, sensorType);
+        DataType dataType = DataType.getInstance(deviceType, sensorType);
         if (!data.containsKey(dataType)) {
             data.put(dataType, new LinkedList<DataInstance>());
         }
@@ -28,8 +28,7 @@ public class SizedDataVector extends DataVector {
 
     @Override
     public void addDataInstance(DeviceType deviceType, int sensorType, DataInstance dataInstance) {
-        // TODO: this will create a lot of garbage, needs better indexing
-        DataType dataType = new DataType(deviceType, sensorType);
+        DataType dataType = DataType.getInstance(deviceType, sensorType);
         if (data.containsKey(dataType)) {
             List<DataInstance> list = data.get(dataType);
             list.add(dataInstance);

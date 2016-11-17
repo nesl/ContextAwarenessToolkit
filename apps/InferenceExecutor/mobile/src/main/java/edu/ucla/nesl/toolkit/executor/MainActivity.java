@@ -88,6 +88,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        if (mBound) {
+            mService.stopInference(this);
+        }
     }
 
     @Override

@@ -29,6 +29,7 @@ public class InferencePipelineBuilder {
 
     public static InferencePipeline buildFromJSON(Context context, String filename) {
         // Load json from a file in assets
+        Log.i(TAG, "Building inference pipeline from JSON...");
         String jsonStr = null;
         try {
             InputStream is = context.getAssets().open(filename);
@@ -42,6 +43,7 @@ public class InferencePipelineBuilder {
             ex.printStackTrace();
         }
         if (jsonStr == null) {
+            Log.e(TAG, "Error: null JSON str.");
             return null;
         }
 
@@ -72,13 +74,23 @@ public class InferencePipelineBuilder {
                         }
                         else {
                             Log.e(TAG, "Error: invalid sensor type: " + name);
+                            throw new JSONException("error");
                         }
                     }
                 }
+                else {
+                    Log.e(TAG, "Error: no data column specified.");
+                    throw new JSONException("error");
+                }
 
                 // Parse window size
-                if (jsonPreprocess.has(StringConstant.WINDOW_SIZE))
+                if (jsonPreprocess.has(StringConstant.WINDOW_SIZE)) {
                     preprocessor.setWindowSize(jsonPreprocess.getInt(StringConstant.WINDOW_SIZE));
+                }
+                else {
+                    Log.e(TAG, "Error:No window size specified for preprocess.");
+                    throw new JSONException("error");
+                }
 
                 // Parse pre-processing operations
                 if (jsonPreprocess.has(StringConstant.OPERATOR)) {
@@ -89,9 +101,17 @@ public class InferencePipelineBuilder {
                     }
                     preprocessor.setOperators(operators);
                 }
+                else {
+                    Log.e(TAG, "Error: No operator specified for preprocess.");
+                    throw new JSONException("error");
+                }
 
                 // Add to the inference pipeline
                 inferencePipeline.addModule(preprocessor);
+            }
+            else {
+                Log.e(TAG, "Error: no preprocess specified.");
+                throw new JSONException("error");
             }
 
             // Parse feature calculation
@@ -100,8 +120,13 @@ public class InferencePipelineBuilder {
                 Feature featureCalculator = new Feature();
 
                 // Parse window size
-                if (jsonFeature.has(StringConstant.WINDOW_SIZE))
+                if (jsonFeature.has(StringConstant.WINDOW_SIZE)) {
                     featureCalculator.setWindowSize(jsonFeature.getInt(StringConstant.WINDOW_SIZE));
+                }
+                else {
+                    Log.e(TAG, "Error: No window size specified for feature.");
+                    throw new JSONException("error");
+                }
 
                 // Parse feature function names
                 if (jsonFeature.has(StringConstant.FEATURE)) {
@@ -112,9 +137,17 @@ public class InferencePipelineBuilder {
                     }
                     featureCalculator.setFeatures(features);
                 }
+                else {
+                    Log.e(TAG, "Error: No feature function specified for feature.");
+                    throw new JSONException("error");
+                }
 
                 // Add to the inference pipeline
                 inferencePipeline.addModule(featureCalculator);
+            }
+            else {
+                Log.e(TAG, "Error: no feature specified.");
+                throw new JSONException("error");
             }
 
             // Parse classifier
@@ -131,6 +164,10 @@ public class InferencePipelineBuilder {
                                     jsonClassifier.getString(StringConstant.CLASSIFIER_PMML)));
                     inferencePipeline.addModule(classifier);
                 }
+            }
+            else {
+                Log.e(TAG, "Error: No classifier specified.");
+                throw new JSONException("error");
             }
         } catch (JSONException e) {
             Log.e(TAG, "Error: invalid json format.");

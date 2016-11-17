@@ -4,15 +4,18 @@ import android.util.Log;
 
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.PMML;
+import org.jpmml.evaluator.Computable;
 import org.jpmml.evaluator.Evaluator;
 import org.jpmml.evaluator.FieldValue;
 import org.jpmml.evaluator.InputField;
 import org.jpmml.evaluator.TargetField;
+import org.jpmml.evaluator.VoteDistribution;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import edu.ucla.nesl.toolkit.common.model.DataInstance;
 import edu.ucla.nesl.toolkit.executor.common.util.PMMLUtil;
@@ -63,29 +66,52 @@ public class Classifier implements ModuleBase {
             }
 
             // Evaluate the PMML model
-            Map<FieldName, ?> results = evaluator.evaluate(arguments);
+            Map<FieldName, ?> evaluateResult = evaluator.evaluate(arguments);
 
             // Get result from target
-            List<DataInstance> result = new ArrayList<>();
+            List<DataInstance> labelResult = new ArrayList<>();
             List<TargetField> targetFields = evaluator.getTargetFields();
             for(TargetField targetField : targetFields){
                 FieldName targetFieldName = targetField.getName();
-                float[] targetValue = {Integer.parseInt(results.get(targetFieldName).toString())};
-                result.add(new DataInstance(0, targetValue));
+                Object targetFieldValue = evaluateResult.get(targetFieldName);
+
+                // Find the label with the highest vote
+                if (targetFieldValue instanceof VoteDistribution) {
+                    VoteDistribution voteDistribution = (VoteDistribution) targetFieldValue;
+                    Set<String> labelDist = voteDistribution.getCategoryValues();
+                    int bestLabel = 0;
+                    double bestProb = 0;
+                    for (String str : labelDist) {
+                        if (voteDistribution.getProbability(str) > bestProb) {
+                            bestLabel = Integer.parseInt(str);
+                            bestProb = Double.valueOf(voteDistribution.getProbability(str));
+                        }
+                    }
+                    float[] targetValue = {bestLabel};
+                    labelResult.add(new DataInstance(0, targetValue));
+                }
+                else if(targetFieldValue instanceof Computable){
+                    Computable computable = (Computable) targetFieldValue;
+                    float[] targetValue = {Integer.parseInt(computable.getResult().toString())};
+                    labelResult.add(new DataInstance(0, targetValue));
+                }
             }
-            return result;
+            return labelResult;
         }
         catch (Exception ex) {
             ex.printStackTrace();
         }
-
         return null;
     }
 
     public String getLabel(List<DataInstance> data) {
         String label = "";
-        for (DataInstance di : process(data)) {
-            label += di.getValues()[0] + " ";
+        List<DataInstance> processed_data = process(data);
+        if (processed_data != null) {
+            for (DataInstance di : processed_data) {
+                label += di.getValues()[0] + " ";
+            }
+
         }
         return label;
     }

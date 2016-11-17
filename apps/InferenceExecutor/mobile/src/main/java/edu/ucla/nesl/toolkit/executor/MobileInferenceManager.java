@@ -37,19 +37,23 @@ public class MobileInferenceManager extends Service {
 
     public void configureDefaultInference(Context context) {
         InferencePipeline pipeline = InferencePipelineBuilder.buildFromJSON(context, INF_JSON);
-        mInferenceExecutor = new InferenceExecutor(
-                DeviceType.ANDROID_PHONE,
-                pipeline,
-                DataInterface.SENSOR,
-                DataInterface.NOTIFICATION,
-                1000 * 20,
-                1000
-        );
-        Log.i(TAG, "InferenceExecutor configure succeeded.");
+        if (pipeline != null) {
+            mInferenceExecutor = new InferenceExecutor();
+            mInferenceExecutor.setDeviceType(DeviceType.ANDROID_PHONE);
+            mInferenceExecutor.setInferencePipeline(pipeline);
+            mInferenceExecutor.setSource(DataInterface.SENSOR);
+            mInferenceExecutor.setSink(DataInterface.NOTIFICATION);
+            mInferenceExecutor.setDuration(1000 * 2);
+            mInferenceExecutor.setInterval(1000 * 20);
+            Log.i(TAG, "InferenceExecutor configure succeeded.");
+        }
+        else {
+            Log.e(TAG, "Null inference pipeline.");
+        }
     }
 
     public void startInference(Context context) {
-        if (mInferenceExecutor != null) {
+        if (mInferenceExecutor != null && mInferenceExecutor.getInferencePipeline() != null) {
             if (!mInferenceExecutor.isRunning()) {
                 mInferenceExecutor.startInferenceAlarm(context);
             }
@@ -63,7 +67,7 @@ public class MobileInferenceManager extends Service {
     }
 
     public void stopInference(Context context) {
-        if (mInferenceExecutor != null) {
+        if (mInferenceExecutor != null && mInferenceExecutor.getInferencePipeline() != null) {
             if (mInferenceExecutor.isRunning()) {
                 mInferenceExecutor.stopInferenceAlarm(context);
             }
