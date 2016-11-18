@@ -107,7 +107,7 @@ public class CommunicationManager extends WearableListenerService implements Dat
             ).await().getNodes();
 
             // Send message to each node
-            Log.i(TAG, "Sending message to nodes: " + nodes.size());
+            Log.i(TAG, "Sending message to connected nodes...");
             for (Node node : nodes) {
                 Wearable.MessageApi.sendMessage(
                         googleApiClient, node.getId(), path, data

@@ -1,9 +1,12 @@
 package edu.ucla.nesl.toolkit.executor;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -16,6 +19,7 @@ import edu.ucla.nesl.toolkit.executor.common.communication.SharedConstant;
 import edu.ucla.nesl.toolkit.executor.common.module.DataInterface;
 import edu.ucla.nesl.toolkit.executor.common.module.InferencePipeline;
 import edu.ucla.nesl.toolkit.executor.common.module.StringConstant;
+import edu.ucla.nesl.toolkit.executor.common.rule.RuntimeRule;
 import edu.ucla.nesl.toolkit.executor.common.util.InferencePipelineBuilder;
 
 public class MobileInferenceManager extends Service {
@@ -26,8 +30,10 @@ public class MobileInferenceManager extends Service {
 
     private static final String INF_JSON = "inference_pipeline.json";
     private InferenceExecutor mInferenceExecutor = null;
-    private Context mContext;
     private MobileCommunicationManager mCommunicationManager;
+
+    private Context mContext;
+    private RuntimeRule mRule;
 
     protected static boolean phoneReady = false;
     protected static boolean wearReady = false;
@@ -49,8 +55,9 @@ public class MobileInferenceManager extends Service {
 
     }
 
-    public void initService(Context context) {
+    public void initService(Context context, RuntimeRule rule) {
         this.mContext = context;
+        this.mRule = rule;
         mCommunicationManager = MobileCommunicationManager.getInstance(mContext);
         configureDefaultInference(mContext);
     }
@@ -87,73 +94,188 @@ public class MobileInferenceManager extends Service {
         }
     }
 
-    public void startInference() {
+    private int tryRunningOnPhone() {
+        if (phoneReady) {
+            if (!mInferenceExecutor.isRunning()) {
+                mInferenceExecutor.startInferenceAlarm(mContext);
+                Intent intent = new Intent();
+                intent.setAction(PHONE_INF_STARTED);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+                Log.i(TAG, "Sending broadcast PHONE_INF_STARTED.");
+                return 0;
+            }
+            else {
+                Log.e(TAG, "Error: phone inference already running.");
+                return -1;
+            }
+        }
+        else {
+            Log.e(TAG, "Error: phone inference not configured.");
+            return -1;
+        }
+    }
+
+    private int tryRunningOnWear() {
         if (wearReady) {
             if (!wearRunning) {
                 // Start remote wear inference
                 mCommunicationManager.sendMessage(SharedConstant.PATH_START_INF, null);
+                return 0;
             }
             else {
                 Log.e(TAG, "Error: wear inference already running.");
+                return -1;
             }
         }
         else {
-            if (phoneReady) {
-                if (!mInferenceExecutor.isRunning()) {
-                    mInferenceExecutor.startInferenceAlarm(mContext);
-                    Intent intent = new Intent();
-                    intent.setAction(PHONE_INF_STARTED);
-                    LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-                    Log.i(TAG, "Sending broadcast PHONE_INF_STARTED.");
-                }
-                else {
-                    Log.e(TAG, "Error: phone inference already running.");
-                }
+            Log.e(TAG, "Error: wear inference not configured.");
+            return -1;
+        }
+    }
+
+    private void tryStopOnPhone() {
+        if (phoneReady) {
+            if (mInferenceExecutor.isRunning()) {
+                mInferenceExecutor.stopInferenceAlarm(mContext);
+                Intent intent = new Intent();
+                intent.setAction(PHONE_INF_STOPPED);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+                Log.i(TAG, "Sending broadcast PHONE_INF_STOPPED.");
+                return;
             }
-            else {
-                Log.e(TAG, "Error: phone inference not configured.");
+        }
+        Log.i(TAG, "Not stopping: phone inference not running.");
+    }
+
+    private void tryStopOnWear() {
+        if (wearReady) {
+            if (wearRunning) {
+                // Stop remote wear inference
+                mCommunicationManager.sendMessage(SharedConstant.PATH_STOP_INF, null);
+                return;
             }
+        }
+        Log.i(TAG, "Not stopping: wear inference not running.");
+    }
+
+    public void startInference() {
+        switch (mRule) {
+            case phone_only:
+                tryRunningOnPhone();
+                return;
+            case wear_only:
+                tryRunningOnWear();
+                return;
+            case best_effort:
+                // Try both wear and phone
+                if (tryRunningOnWear() < 0) {
+                    tryRunningOnPhone();
+                }
+
+                // Register broadcast receiver
+                LocalBroadcastManager bManager = LocalBroadcastManager.getInstance(this);
+                IntentFilter intentFilter = new IntentFilter();
+                intentFilter.addAction(SharedConstant.PATH_DEVICE_ACTIVE);
+                bManager.registerReceiver(mReceiver, intentFilter);
+                Log.i(TAG, "Receiver registered.");
+
+                // Start the device status monitor
+                wearWatchDog.start();
+
+                return;
+            default:
+                Log.e(TAG, "Error: unknown runtime rule");
         }
     }
 
     public void stopInference() {
-        if (wearReady) {
-            if (wearRunning) {
-                // Start remote wear inference
-                mCommunicationManager.sendMessage(SharedConstant.PATH_STOP_INF, null);
-            }
-            else {
-                Log.e(TAG, "Error: wear inference not running.");
-            }
-        }
-        else {
-            if (phoneReady) {
-                if (mInferenceExecutor.isRunning()) {
-                    mInferenceExecutor.stopInferenceAlarm(mContext);
-                    Intent intent = new Intent();
-                    intent.setAction(PHONE_INF_STOPPED);
-                    LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-                    Log.i(TAG, "Sending broadcast PHONE_INF_STOPPED.");
-                }
-                else {
-                    Log.e(TAG, "Error: phone inference not running.");
-                }
-            }
-            else {
-                Log.e(TAG, "Error: inference not configured.");
-            }
+        tryStopOnWear();
+        tryStopOnPhone();
+        if (wearWatchDog.running) {
+            wearWatchDog.stop();
+
+            // Unregister broadcast receiver
+            LocalBroadcastManager bManager = LocalBroadcastManager.getInstance(this);
+            bManager.unregisterReceiver(mReceiver);
+            Log.i(TAG, "Receiver un-registered.");
         }
     }
 
-    public void configureRule() {
-        // Phone first, watch first, etc.
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i(TAG, "Broadcast received " + intent.getAction());
+            if (intent.getAction().equals(SharedConstant.PATH_DEVICE_ACTIVE)) {
+                if (wearWatchDog.running) {
+                    wearWatchDog.addWearBeacon();
+                }
+            }
+        }
+    };
+
+    // Watchdog for checking wear's status
+    private Handler handler = new Handler();
+    private final static long INACTIVE_TIMEOUT = 1000 * 30;
+    protected WearWatchDog wearWatchDog = new WearWatchDog();
+    private class WearWatchDog {
+        private boolean wearIsAvailable = true;
+        public boolean running;
+
+        public void start() {
+            running = true;
+            if (wearIsAvailable)
+                handler.postDelayed(moveToPhone, INACTIVE_TIMEOUT);
+        }
+
+        public void addWearBeacon() {
+            Log.i(TAG, "Beacon ACKed.");
+            if (wearIsAvailable) {
+                handler.removeCallbacks(moveToPhone);
+
+            }
+            else {
+                handler.post(moveToWear);
+            }
+            handler.postDelayed(moveToPhone, INACTIVE_TIMEOUT);
+        }
+
+        public void stop() {
+            wearIsAvailable = true;
+            handler.removeCallbacks(moveToPhone);
+            running = false;
+        }
+
+        private Runnable moveToPhone = new Runnable() {
+            @Override
+            public void run() {
+                Log.i(TAG, "Wear is no longer active, moving inference to phone...");
+                wearIsAvailable = false;
+                tryStopOnWear();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        tryRunningOnPhone();
+                    }
+                }, 1000);
+            }
+        };
+
+        private Runnable moveToWear = new Runnable() {
+            @Override
+            public void run() {
+                Log.i(TAG, "Wear is active again, moving inference to wear...");
+                wearIsAvailable = true;
+                tryStopOnPhone();
+                tryRunningOnWear();
+            }
+        };
     }
 
-    private void checkConnectivity() {
-        // Check if device is connected via BTLE
+    public RuntimeRule getmRule() {
+        return mRule;
     }
 
-    private void checkSensorCoverage() {
-        // Check if device can provide meaningful sensing
+    public void setmRule(RuntimeRule mRule) {
+        this.mRule = mRule;
     }
 }

@@ -76,6 +76,13 @@ public class MobileCommunicationManager extends CommunicationManager {
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
             Log.i(TAG, "Sending broadcast PATH_INF_STOPPED.");
         }
+        else if (messageEvent.getPath().equals(SharedConstant.PATH_DEVICE_ACTIVE)) {
+            Log.i(TAG, "Device active beacon (SigMo) received!");
+            Intent intent = new Intent();
+            intent.setAction(SharedConstant.PATH_DEVICE_ACTIVE);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+            Log.i(TAG, "Sending broadcast PATH_DEVICE_ACTIVE.");
+        }
         else {
             Log.e(TAG, "Error: unknown message path.");
         }

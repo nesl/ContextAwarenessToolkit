@@ -16,8 +16,8 @@ public class SharedConstant {
     public static final String PATH_INF_STARTED = "inf_started";
     public static final String PATH_INF_STOPPED = "inf_stopped";
 
-    public static final String PATH_DEVICE_UNAVAILABLE = "device_unavailable";
-    public static final String PATH_DEVICE_AVAILABLE = "device_available";
+    public static final String PATH_DEVICE_CONNECTED = "device_connected";
+    public static final String PATH_DEVICE_ACTIVE = "device_active";
 
     public static final String KEY_TIMESTAMP = "timestamp";
     public static final String KEY_VALUE = "value";

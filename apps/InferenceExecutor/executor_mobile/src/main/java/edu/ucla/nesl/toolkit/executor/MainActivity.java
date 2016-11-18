@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import edu.ucla.nesl.toolkit.executor.common.communication.SharedConstant;
 import edu.ucla.nesl.toolkit.executor.common.module.InferencePipeline;
+import edu.ucla.nesl.toolkit.executor.common.rule.RuntimeRule;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Mobile: Activity";
@@ -37,7 +38,9 @@ public class MainActivity extends AppCompatActivity {
             mService = binder.getService();
             mBound = true;
             Log.i(TAG, "Bind to service");
-            mService.initService(MainActivity.this.getApplicationContext());
+            mService.initService(
+                    MainActivity.this.getApplicationContext(),
+                    RuntimeRule.best_effort);
         }
 
         @Override

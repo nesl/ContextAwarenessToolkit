@@ -3,6 +3,10 @@ package edu.ucla.nesl.toolkit.executor;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
+import android.hardware.TriggerEvent;
+import android.hardware.TriggerEventListener;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -20,6 +24,18 @@ public class WearInferenceManager extends Service {
     private InferenceExecutor mInferenceExecutor = null;
     private WearCommunicationManager mCommunicationManager;
     private Context mContext;
+
+    private SensorManager sensorManager;
+    private TriggerListener triggerListener;
+    private class TriggerListener extends TriggerEventListener {
+        public void onTrigger(TriggerEvent event) {
+            Log.i(TAG, "SigMo received: " + event.values[0]);
+            mCommunicationManager.sendMessage(SharedConstant.PATH_DEVICE_ACTIVE, null);
+            sensorManager.requestTriggerSensor(
+                    triggerListener,
+                    sensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION));
+        }
+    }
 
     private final IBinder mBinder = new LocalBinder();
     public class LocalBinder extends Binder {
@@ -55,6 +71,10 @@ public class WearInferenceManager extends Service {
 
             // Let the phone know that the inference is ready
             mCommunicationManager.sendMessage(SharedConstant.PATH_INF_READY, null);
+
+            // Configure the sensor manager
+            sensorManager = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
+            triggerListener = new TriggerListener();
         }
         else {
             Log.e(TAG, "Null inference pipeline.");
@@ -68,6 +88,11 @@ public class WearInferenceManager extends Service {
 
                 // Let the phone know that the inference is running
                 mCommunicationManager.sendMessage(SharedConstant.PATH_INF_STARTED, null);
+
+                // Register for sigmo listener
+                sensorManager.requestTriggerSensor(
+                        triggerListener,
+                        sensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION));
             }
             else {
                 Log.e(TAG, "Error: inference already running.");
@@ -94,5 +119,4 @@ public class WearInferenceManager extends Service {
             Log.e(TAG, "Error: inference not configured.");
         }
     }
-
 }
