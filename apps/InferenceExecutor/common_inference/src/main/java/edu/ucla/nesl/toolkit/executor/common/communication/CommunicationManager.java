@@ -80,7 +80,7 @@ public class CommunicationManager extends WearableListenerService implements Dat
         googleApiClient.disconnect();
     }
 
-    protected boolean validateConnection() {
+    public boolean validateConnection() {
         if (googleApiClient.isConnected()) {
             return true;
         }
@@ -90,7 +90,16 @@ public class CommunicationManager extends WearableListenerService implements Dat
         return result.isSuccess();
     }
 
-    protected void sendMessage(final String path, byte[] data) {
+    public void sendMessage(final String path, final byte[] data) {
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                sendMessageAsync(path, data);
+            }
+        });
+    }
+
+    private void sendMessageAsync(final String path, byte[] data) {
         if (validateConnection()) {
             // Get list of nodes
             List<Node> nodes = Wearable.NodeApi.getConnectedNodes(

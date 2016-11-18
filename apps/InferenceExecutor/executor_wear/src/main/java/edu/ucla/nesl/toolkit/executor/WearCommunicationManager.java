@@ -1,6 +1,8 @@
 package edu.ucla.nesl.toolkit.executor;
 
 import android.content.Context;
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gms.common.api.ResultCallback;
@@ -19,9 +21,10 @@ import edu.ucla.nesl.toolkit.executor.common.communication.SharedConstant;
 
 public class WearCommunicationManager extends CommunicationManager {
     protected static final String TAG = "WearBleClient";
-    private static CommunicationManager instance;
 
-    public static synchronized CommunicationManager getInstance(Context context) {
+    private static WearCommunicationManager instance;
+
+    public static synchronized WearCommunicationManager getInstance(Context context) {
         if (instance == null) {
             instance = new WearCommunicationManager(context.getApplicationContext());
         }
@@ -79,8 +82,27 @@ public class WearCommunicationManager extends CommunicationManager {
         Log.i(TAG, "Received message: " + messageEvent.getPath());
 
         // Perform corresponding actions based on the message content
-        if (messageEvent.getPath().equals(SharedConstant.PATH_TEST)) {
-
+        if (messageEvent.getPath().equals(SharedConstant.PATH_CONFIGURE_INF)) {
+            Intent intent = new Intent();
+            intent.setAction(SharedConstant.PATH_CONFIGURE_INF);
+            intent.putExtra(SharedConstant.KEY_PIPELINE, messageEvent.getData());
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+            Log.i(TAG, "Sending broadcast PATH_CONFIGURE_INF.");
+        }
+        else if (messageEvent.getPath().equals(SharedConstant.PATH_START_INF)) {
+            Intent intent = new Intent();
+            intent.setAction(SharedConstant.PATH_START_INF);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+            Log.i(TAG, "Sending broadcast PATH_START_INF.");
+        }
+        else if (messageEvent.getPath().equals(SharedConstant.PATH_STOP_INF)) {
+            Intent intent = new Intent();
+            intent.setAction(SharedConstant.PATH_STOP_INF);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+            Log.i(TAG, "Sending broadcast PATH_STOP_INF.");
+        }
+        else {
+            Log.e(TAG, "Error: unknown message path.");
         }
 
     }

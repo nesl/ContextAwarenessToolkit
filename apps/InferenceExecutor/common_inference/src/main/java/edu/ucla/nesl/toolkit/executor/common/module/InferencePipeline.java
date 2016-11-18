@@ -2,6 +2,14 @@ package edu.ucla.nesl.toolkit.executor.common.module;
 
 import android.util.Log;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,7 +21,7 @@ import java.util.Set;
  * Created by cgshen on 11/13/16.
  */
 
-public class InferencePipeline {
+public class InferencePipeline implements Serializable {
     private static final String TAG = "InfPipeline";
 
     private Set<Integer> sensors;
@@ -63,6 +71,50 @@ public class InferencePipeline {
         else {
             Log.e(TAG, "Error: unsupported module type");
         }
+    }
+
+    public byte[] serialize() {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutput out = null;
+        try {
+            out = new ObjectOutputStream(bos);
+            out.writeObject(this);
+            out.flush();
+            return bos.toByteArray();
+        }
+        catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        finally {
+            try {
+                bos.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    public static InferencePipeline deserialize(byte [] input) {
+        ByteArrayInputStream bis = new ByteArrayInputStream(input);
+        ObjectInput in = null;
+        try {
+            in = new ObjectInputStream(bis);
+            return (InferencePipeline) in.readObject();
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        finally {
+            try {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException ex) {
+               ex.printStackTrace();
+            }
+        }
+        return null;
     }
 
     public void addDataColumn(String name) {

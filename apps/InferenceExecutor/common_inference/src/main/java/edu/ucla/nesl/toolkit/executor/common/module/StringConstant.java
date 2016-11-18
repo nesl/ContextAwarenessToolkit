@@ -5,6 +5,9 @@ package edu.ucla.nesl.toolkit.executor.common.module;
  */
 
 public class StringConstant {
+    // Device names
+    public static final String ANDROID_PHONE = "android_phone";
+    public static final String ANDROID_WEAR = "android_wear";
 
     // Module names
     public static final String MOD_PREPROCESS = "mod_preprocess";

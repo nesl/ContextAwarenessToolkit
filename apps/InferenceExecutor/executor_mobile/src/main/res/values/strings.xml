@@ -4,4 +4,7 @@
     <string name="button_stop">Stop</string>
     <string name="status_stopped">Stopped</string>
     <string name="status_running">Running</string>
+    <string name="device_none">None</string>
+    <string name="device_phone">Phone</string>
+    <string name="device_watch">Watch</string>
 </resources>

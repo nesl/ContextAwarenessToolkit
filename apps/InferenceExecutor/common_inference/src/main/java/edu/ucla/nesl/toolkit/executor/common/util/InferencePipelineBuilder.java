@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import edu.ucla.nesl.toolkit.executor.common.module.Classifier;
 import edu.ucla.nesl.toolkit.executor.common.module.Feature;
@@ -27,30 +29,56 @@ import edu.ucla.nesl.toolkit.executor.common.module.StringConstant;
 public class InferencePipelineBuilder {
     private static final String TAG = "InfPipelineBuilder";
 
-    public static InferencePipeline buildFromJSON(Context context, String filename) {
+    public static JSONObject readJSONFromAssets(Context context, String filename) {
         // Load json from a file in assets
         Log.i(TAG, "Building inference pipeline from JSON...");
-        String jsonStr = null;
         try {
             InputStream is = context.getAssets().open(filename);
             byte[] buffer = new byte[is.available()];
             is.read(buffer);
             is.close();
-            jsonStr = new String(buffer, "UTF-8");
+            return new JSONObject(new String(buffer, "UTF-8"));
         }
         catch (IOException ex) {
             Log.e(TAG, "Error: inference pipeline not found in app's assets.");
             ex.printStackTrace();
         }
-        if (jsonStr == null) {
-            Log.e(TAG, "Error: null JSON str.");
-            return null;
+        catch (JSONException e) {
+            Log.e(TAG, "Error: invalid json format.");
+            e.printStackTrace();
         }
+        Log.e(TAG, "Error: null JSON str.");
+        return null;
+    }
 
+    public static Map<String, InferencePipeline> buildForMultipleDevice(
+            Context context,
+            JSONObject json) {
+        Map<String, InferencePipeline> result = null;
+        try {
+            result = new HashMap<>();
+            if (json.has(StringConstant.ANDROID_PHONE)) {
+                result.put(StringConstant.ANDROID_PHONE, buildForSingleDevice(
+                        context,
+                        json.getJSONObject(StringConstant.ANDROID_PHONE)));
+            }
+            if (json.has(StringConstant.ANDROID_WEAR)) {
+                result.put(StringConstant.ANDROID_WEAR, buildForSingleDevice(
+                        context,
+                        json.getJSONObject(StringConstant.ANDROID_WEAR)));
+            }
+        }
+        catch (JSONException e) {
+            Log.e(TAG, "Error: invalid json format.");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public static InferencePipeline buildForSingleDevice(Context context, JSONObject json) {
         // Parse a json object from the string
         InferencePipeline inferencePipeline = null;
         try {
-            JSONObject json = new JSONObject(jsonStr);
             inferencePipeline = new InferencePipeline();
 
             // Parse pre-processing
@@ -152,8 +180,7 @@ public class InferencePipelineBuilder {
 
             // Parse classifier
             if (json.has(StringConstant.MOD_CLASSIFIER)) {
-                JSONObject jsonClassifier = json.getJSONArray(
-                        StringConstant.MOD_CLASSIFIER).getJSONObject(0);
+                JSONObject jsonClassifier = json.getJSONObject(StringConstant.MOD_CLASSIFIER);
                 if (jsonClassifier.has(StringConstant.CLASSIFIER_NAME) &&
                         jsonClassifier.has(StringConstant.CLASSIFIER_PMML)) {
                     Classifier classifier = new Classifier();
