@@ -2,7 +2,9 @@ package edu.ucla.nesl.toolkit.common.model;
 
 import android.util.Log;
 
+import java.io.BufferedWriter;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -97,8 +99,32 @@ public class DataVector implements Serializable {
         return this.data;
     }
 
-    public void dump(String filename) throws IOException{
+    public void dumpAsObject(String filename) throws IOException{
         new ObjectOutputStream(new FileOutputStream(filename)).writeObject(this);
+    }
+
+    public void dumpAsCSV(String filename) throws IOException{
+        BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
+        for (DataType dt : data.keySet()) {
+            for (DataInstance di : data.get(dt)) {
+                StringBuffer sb = new StringBuffer();
+                sb.append(di.getTimestamp());
+                sb.append(",");
+                sb.append(dt.getDeviceType());
+                sb.append(",");
+                sb.append(dt.getSensorType());
+                sb.append(",");
+                for (float v : di.getValues()) {
+                    sb.append(dt.getSensorType());
+                    sb.append(",");
+                }
+                sb.deleteCharAt(sb.length() - 1);
+                writer.append(sb.toString());
+                writer.newLine();
+            }
+        }
+        writer.flush();
+        writer.close();
     }
 
     public long getTimestamp() {
