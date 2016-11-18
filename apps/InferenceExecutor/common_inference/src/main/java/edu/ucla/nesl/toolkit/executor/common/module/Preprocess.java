@@ -11,7 +11,7 @@ import edu.ucla.nesl.toolkit.common.model.DataInstance;
  * Created by cgshen on 11/12/16.
  */
 
-public class Preprocess implements ModuleBase {
+public class Preprocess extends ModuleBase {
     private static final String TAG = "Module: Preprocess";
     private static final float SMOOTH_FACTOR = 0.1f;
 

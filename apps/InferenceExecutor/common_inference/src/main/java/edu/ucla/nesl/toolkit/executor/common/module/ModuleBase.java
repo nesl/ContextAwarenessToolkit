@@ -1,5 +1,6 @@
 package edu.ucla.nesl.toolkit.executor.common.module;
 
+import java.io.Serializable;
 import java.util.List;
 
 import edu.ucla.nesl.toolkit.common.model.DataInstance;
@@ -9,10 +10,9 @@ import edu.ucla.nesl.toolkit.common.model.DataInstance;
  * Base class for modules in an inference pipeline
  */
 
-public interface ModuleBase {
-    String getModuleType();
+public abstract class ModuleBase implements Serializable {
+    public abstract String getModuleType();
 
     // Process a data vector
-    List<DataInstance> process(List<DataInstance> data);
-
+    public abstract List<DataInstance> process(List<DataInstance> data);
 }

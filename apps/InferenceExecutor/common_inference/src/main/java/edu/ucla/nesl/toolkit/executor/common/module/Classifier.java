@@ -24,7 +24,7 @@ import edu.ucla.nesl.toolkit.executor.common.util.PMMLUtil;
  * Created by cgshen on 11/12/16.
  */
 
-public class Classifier implements ModuleBase {
+public class Classifier extends ModuleBase {
     private static final String TAG = "Classifier";
 
     private String name;

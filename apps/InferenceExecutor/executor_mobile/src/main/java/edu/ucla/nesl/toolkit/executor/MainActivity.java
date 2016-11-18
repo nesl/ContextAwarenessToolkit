@@ -113,8 +113,8 @@ public class MainActivity extends AppCompatActivity {
         // Register broadcast receiver
         LocalBroadcastManager bManager = LocalBroadcastManager.getInstance(this);
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(SharedConstant.PATH_START_INF);
-        intentFilter.addAction(SharedConstant.PATH_STOP_INF);
+        intentFilter.addAction(SharedConstant.PATH_INF_STARTED);
+        intentFilter.addAction(SharedConstant.PATH_INF_STOPPED);
         intentFilter.addAction(MobileInferenceManager.PHONE_INF_STARTED);
         intentFilter.addAction(MobileInferenceManager.PHONE_INF_STOPPED);
         bManager.registerReceiver(mReceiver, intentFilter);

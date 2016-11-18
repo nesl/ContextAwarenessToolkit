@@ -120,7 +120,7 @@ public class MobileInferenceManager extends Service {
         if (wearReady) {
             if (wearRunning) {
                 // Start remote wear inference
-                mCommunicationManager.sendMessage(SharedConstant.PATH_INF_STOPPED, null);
+                mCommunicationManager.sendMessage(SharedConstant.PATH_STOP_INF, null);
             }
             else {
                 Log.e(TAG, "Error: wear inference not running.");

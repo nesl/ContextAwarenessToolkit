@@ -42,6 +42,7 @@ public class MainActivity extends WearableActivity {
             WearInferenceManager.LocalBinder binder =
                     (WearInferenceManager.LocalBinder) service;
             mService = binder.getService();
+            mService.initService(MainActivity.this);
             mBound = true;
             Log.i(TAG, "Bind to service");
         }
@@ -175,11 +176,11 @@ public class MainActivity extends WearableActivity {
 
             } else if (intent.getAction().equals(SharedConstant.PATH_START_INF)) {
                 mService.startInference();
-                mTextView.setText(R.string.status_text);
+                mTextView.setText(R.string.status_running);
             }
             else if (intent.getAction().equals(SharedConstant.PATH_STOP_INF)) {
                 mService.stopInference();
-                mTextView.setText(R.string.status_running);
+                mTextView.setText(R.string.status_text);
             }
         }
     };

@@ -15,7 +15,7 @@ import edu.ucla.nesl.toolkit.common.model.DataInstance;
  * Created by cgshen on 11/12/16.
  */
 
-public class Feature implements ModuleBase {
+public class Feature extends ModuleBase {
     private static final String TAG = "Feature";
 
     private int windowSize;
