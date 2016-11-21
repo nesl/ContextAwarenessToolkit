@@ -17,6 +17,11 @@ Similar to Inference Composer, Inference Executor has a set of default inference
 
 To perform an inference in Inference Executor, app developers specify a pointer to the JSON pipeline file, the interval and duration of the current inference execution, and an optimization goal described next.
 
+## API Example
+See https://github.com/nesl/ContextAwarenessToolkit/blob/master/apps/InferenceExecutor/executor_mobile/src/main/java/edu/ucla/nesl/toolkit/executor/MainActivity.java
+and 
+https://github.com/nesl/ContextAwarenessToolkit/blob/master/apps/InferenceExecutor/executor_mobile/src/main/java/edu/ucla/nesl/toolkit/executor/MobileInferenceManager.java
+
 ### Runtime Optimization
 Inference Executor supports the following optimization goal:
 - Phone only: Always perform the inference on a smartphone.
