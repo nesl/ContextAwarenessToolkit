@@ -52,4 +52,4 @@ export_inference([pre_processor, feature_calculator, classifiers])
 Developers configure pre-processing, feature calculation, and classifiers using existing inference modules. They can export the entire inference as a JSON file after specifying each modules.
 
 ### PMML Transformer
-Because there is no support on Android to transform a PMML file into serialized Java object, we have provided a Java program to transform a `.pmml` model to a `.pmml.ser` file that can be read and parsed by Inferece Executor.
+Because there is no support on Android to transform a PMML file into serialized Java object, we have provided a Java program [PMMLTransformer](https://github.com/nesl/ContextAwarenessToolkit/tree/master/apps/InferenceComposer/PMMLTransformer) to transform a `.pmml` model to a `.pmml.ser` file that can be read and parsed by Inferece Executor.
