@@ -77,7 +77,7 @@ public class MobileInferenceManager extends Service {
                 mInferenceExecutor.setSource(DataInterface.SENSOR);
                 mInferenceExecutor.setSink(DataInterface.NOTIFICATION);
                 mInferenceExecutor.setDuration(1000 * 2);
-                mInferenceExecutor.setInterval(1000 * 20);
+                mInferenceExecutor.setInterval(1000 * 10);
                 phoneReady = true;
                 Log.i(TAG, "Phone-side InferenceExecutor configure succeeded.");
             }

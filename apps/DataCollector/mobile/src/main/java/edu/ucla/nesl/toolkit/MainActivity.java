@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
 
             // Dump the data to file
             try {
-                result.dumpAsObject(
+                result.dumpAsCSV(
                         Environment.getExternalStorageDirectory().getAbsolutePath()
                                 + "/data_file_" + mTime);
             } catch (IOException e) {

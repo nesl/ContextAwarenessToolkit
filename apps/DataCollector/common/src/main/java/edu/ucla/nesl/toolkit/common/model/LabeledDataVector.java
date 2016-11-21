@@ -80,17 +80,19 @@ public class LabeledDataVector extends DataVector {
                 sb.append(",");
                 sb.append(dl.getNominalValue());
                 sb.append(",");
-                sb.append(dl.getSensorValue().getTimestamp());
-                sb.append(",");
-                sb.append(dl.getSensorValue().getDataType().getDeviceType());
-                sb.append(",");
-                sb.append(dl.getSensorValue().getDataType().getSensorType());
-                sb.append(",");
-                for (float v : dl.getSensorValue().getValues()) {
-                    sb.append(v);
+                if (dl.getSensorValue() != null) {
+                    sb.append(dl.getSensorValue().getTimestamp());
                     sb.append(",");
+                    sb.append(dl.getSensorValue().getDataType().getDeviceType());
+                    sb.append(",");
+                    sb.append(dl.getSensorValue().getDataType().getSensorType());
+                    sb.append(",");
+                    for (float v : dl.getSensorValue().getValues()) {
+                        sb.append(v);
+                        sb.append(",");
+                    }
+                    sb.deleteCharAt(sb.length() - 1);
                 }
-                sb.deleteCharAt(sb.length() - 1);
                 writer.append(sb.toString());
                 writer.newLine();
             }

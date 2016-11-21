@@ -19,6 +19,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp"
+        android:textSize="@dimen/font_size_large"
         android:onClick="onStartClicked"/>
 
     <LinearLayout
@@ -33,14 +34,16 @@
         android:layout_height="wrap_content"
         android:text="@string/status_stopped"
         android:textColor="#888888"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"
+            android:textSize="@dimen/font_size_large"/>
 
         <TextView android:id="@+id/device_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/device_none"
             android:textColor="#888888"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center"
+            android:textSize="@dimen/font_size_large"/>
     </LinearLayout>
 
     <Button
@@ -51,5 +54,6 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="30dp"
+        android:textSize="@dimen/font_size_large"
         android:onClick="onStopClicked"/>
 </RelativeLayout>

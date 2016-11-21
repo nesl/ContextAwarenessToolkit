@@ -66,7 +66,7 @@ public class WearInferenceManager extends Service {
             mInferenceExecutor.setSource(DataInterface.SENSOR);
             mInferenceExecutor.setSink(DataInterface.NOTIFICATION);
             mInferenceExecutor.setDuration(1000 * 2);
-            mInferenceExecutor.setInterval(1000 * 20);
+            mInferenceExecutor.setInterval(1000 * 10);
             Log.i(TAG, "Wear-side InferenceExecutor ready.");
 
             // Let the phone know that the inference is ready
